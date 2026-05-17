@@ -3,2080 +3,2441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدير الاجتماعات - Meeting Manager</title>
-    <script src="https://apis.google.com/js/api.js"></script>
+    <title>نظام متابعة اجتماعات HIO v4</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #1a5f9e;
+            --primary-light: #2d7fc7;
+            --primary-dark: #0d3d66;
+            --secondary: #e8b339;
+            --accent: #c0392b;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #e0e6ed;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 30px rgba(0,0,0,0.12);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            color: #333;
+            overflow-x: hidden;
         }
 
-        /* Login Screen */
+        /* ===== LOGIN SCREEN ===== */
         .login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            transition: opacity 0.5s;
+            position: fixed; inset: 0;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
         }
+        .login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        .login-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 50px 40px;
+            width: 100%; max-width: 420px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
             text-align: center;
-            width: 90%;
-            max-width: 400px;
+            animation: loginSlide 0.6s ease;
+        }
+        @keyframes loginSlide {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .login-box h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 28px;
+        .login-logo {
+            width: 90px; height: 90px;
+            margin: 0 auto 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 32px; font-weight: 800;
+            box-shadow: 0 8px 25px rgba(26,95,158,0.4);
+            overflow: hidden;
         }
+        .login-logo img { width: 80px; height: 80px; object-fit: contain; }
 
-        .login-box p {
-            color: #666;
+        .login-card h1 {
+            font-size: 26px; font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+        .login-card .subtitle {
+            color: var(--text-light); font-size: 14px;
             margin-bottom: 30px;
         }
 
-        .login-box input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            text-align: center;
-            transition: border-color 0.3s;
+        .form-group { margin-bottom: 20px; text-align: right; }
+        .form-group label {
+            display: block; font-weight: 600;
+            margin-bottom: 8px; color: var(--text);
+            font-size: 14px;
         }
-
-        .login-box input:focus {
+        .form-group select,
+        .form-group input {
+            width: 100%; padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'Cairo', sans-serif;
+            font-size: 15px;
+            transition: var(--transition);
+            background: white;
+        }
+        .form-group select:focus,
+        .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26,95,158,0.1);
         }
 
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border: none; border-radius: var(--radius-sm);
+            font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: var(--transition);
         }
-
-        .login-btn:hover {
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(26,95,158,0.3);
+        }
+        .btn-primary:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26,95,158,0.4);
         }
 
-        .error-msg {
-            color: #e74c3c;
-            margin-top: 10px;
-            display: none;
+        .login-error {
+            color: var(--danger); font-size: 13px;
+            margin-top: 12px; display: none;
+            padding: 10px; background: rgba(231,76,60,0.1);
+            border-radius: 8px;
         }
 
-        /* Main App */
-        .app-container {
-            display: none;
+        /* ===== HEADER ===== */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 0;
+            position: sticky; top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .header-top {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+
+        .header-logo {
+            width: 50px; height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header-logo img { width: 42px; height: 42px; object-fit: contain; }
+        .header-logo span { color: var(--primary); font-weight: 800; font-size: 18px; }
+
+        .header-title h2 {
+            font-size: 20px; font-weight: 800;
+            margin: 0;
+        }
+        .header-title span {
+            font-size: 12px; opacity: 0.8;
+        }
+
+        .header-greeting {
+            text-align: center;
+            flex: 1;
+        }
+        .header-greeting .greeting-text {
+            font-size: 18px; font-weight: 700;
+        }
+        .header-greeting .greeting-name {
+            font-size: 14px; opacity: 0.9;
+        }
+
+        .header-right {
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .user-badge {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+        }
+        .user-badge .avatar {
+            width: 32px; height: 32px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: var(--primary-dark);
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.3); }
+
+        /* ===== TABS ===== */
+        .tabs-bar {
+            display: flex; gap: 0;
+            padding: 0 30px;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            background: none; border: none;
+            color: rgba(255,255,255,0.7);
+            padding: 14px 24px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: white; }
+        .tab-btn.active {
+            color: white;
+            font-weight: 700;
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute; bottom: 0; left: 20%; right: 20%;
+            height: 3px;
+            background: var(--secondary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 25px 30px;
         }
 
-        .header {
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap; gap: 15px;
+        }
+        .toolbar-left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .toolbar-right { display: flex; gap: 12px; align-items: center; }
+
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            padding: 12px 16px 12px 45px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            width: 280px;
+            transition: var(--transition);
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            width: 320px;
+        }
+        .search-box::before {
+            content: '🔍'; position: absolute;
+            left: 14px; top: 50%; transform: translateY(-50%);
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
             background: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .header h1 {
-            color: #667eea;
-            font-size: 24px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .logout-btn {
-            padding: 8px 20px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
         }
 
-        .sync-btn {
-            padding: 8px 20px;
-            background: #4285f4;
+        .btn-add {
+            background: linear-gradient(135deg, var(--success), #2ecc71);
             color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            box-shadow: 0 4px 15px rgba(39,174,96,0.3);
+        }
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39,174,96,0.4);
         }
 
-        .sync-btn:hover {
-            background: #3367d6;
+        .btn-print {
+            background: linear-gradient(135deg, var(--info), #5dade2);
+            color: white;
         }
 
-        .sync-btn.syncing {
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Stats Cards */
+        /* ===== STATS CARDS ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
-
         .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.3s;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-right: 4px solid var(--primary);
+        }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+        .stat-card .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 12px;
+        }
+        .stat-card .stat-value {
+            font-size: 32px; font-weight: 800;
+            color: var(--primary-dark);
+        }
+        .stat-card .stat-label {
+            font-size: 14px; color: var(--text-light);
+            margin-top: 4px;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card .icon {
-            font-size: 35px;
-            margin-bottom: 10px;
-        }
-
-        .stat-card h3 {
-            color: #666;
-            font-size: 13px;
-            margin-bottom: 5px;
-        }
-
-        .stat-card .number {
-            font-size: 28px;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        /* Main Content Grid */
-        .main-grid {
+        /* ===== MEETINGS GRID ===== */
+        .meetings-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
             gap: 20px;
         }
 
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+        .meeting-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
             cursor: pointer;
-            font-size: 14px;
-            transition: transform 0.2s;
+            border-right: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
         }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
+        .meeting-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
         }
+        .meeting-card.external { border-right-color: #e67e22; }
+        .meeting-card.visit { border-right-color: #9b59b6; }
+        .meeting-card.important { border-right-color: var(--danger); }
 
-        .btn-success {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
+        .meeting-card .card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 12px;
         }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
+        .meeting-card .card-type {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px; font-weight: 700;
         }
+        .card-type.internal { background: rgba(26,95,158,0.1); color: var(--primary); }
+        .card-type.external { background: rgba(230,126,34,0.1); color: #e67e22; }
+        .card-type.visit { background: rgba(155,89,182,0.1); color: #9b59b6; }
 
-        .btn-warning {
-            background: #f39c12;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
+        .meeting-card .card-title {
+            font-size: 17px; font-weight: 700;
+            color: var(--text);
             margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
+            line-height: 1.4;
         }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Meeting List */
-        .meeting-item {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-right: 4px solid #667eea;
-            transition: all 0.3s;
-        }
-
-        .meeting-item:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .meeting-item.urgent {
-            border-right-color: #e74c3c;
-            background: #fff5f5;
-        }
-
-        .meeting-item.completed {
-            border-right-color: #27ae60;
-            opacity: 0.8;
-        }
-
-        .meeting-item.planned {
-            border-right-color: #f39c12;
-            background: #fffbf0;
-        }
-
-        .meeting-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .meeting-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .meeting-type {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .meeting-type.planned {
-            background: #f39c12;
-            color: white;
-        }
-
-        .meeting-type.held {
-            background: #27ae60;
-            color: white;
-        }
-
-        .meeting-date {
-            background: #667eea;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
+        .meeting-card .card-meta {
+            display: flex; flex-direction: column; gap: 6px;
+            color: var(--text-light);
             font-size: 13px;
         }
-
-        .meeting-date.urgent-date {
-            background: #e74c3c;
+        .meeting-card .card-meta span {
+            display: flex; align-items: center; gap: 8px;
         }
-
-        .meeting-date.completed-date {
-            background: #27ae60;
+        .meeting-card .card-actions {
+            display: flex; gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
         }
-
-        .meeting-details {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .meeting-details p {
-            margin-bottom: 5px;
-        }
-
-        .meeting-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        /* Source Badge */
-        .source-badge {
-            display: inline-block;
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin-left: 5px;
-        }
-
-        /* Tasks List */
-        .task-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            gap: 12px;
-        }
-
-        .task-item.completed {
-            opacity: 0.6;
-        }
-
-        .task-item.completed .task-text {
-            text-decoration: line-through;
-        }
-
-        .task-checkbox {
-            width: 20px;
-            height: 20px;
+        .card-actions .btn-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: none;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        .btn-icon.edit { background: rgba(52,152,219,0.1); color: var(--info); }
+        .btn-icon.delete { background: rgba(231,76,60,0.1); color: var(--danger); }
+        .btn-icon:hover { transform: scale(1.1); }
+
+        .tasks-badge {
+            position: absolute; top: 16px; left: 16px;
+            background: var(--danger);
+            color: white;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
         }
 
-        .task-text {
-            flex: 1;
-            font-size: 15px;
-        }
-
-        .task-meta {
-            font-size: 12px;
-            color: #999;
-        }
-
-        /* Modal */
+        /* ===== MODAL ===== */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; inset: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 500;
-            align-items: center;
-            justify-content: center;
-            overflow-y: auto;
+            backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000;
             padding: 20px;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            width: 90%;
-            max-width: 700px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            width: 100%; max-width: 700px;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            animation: modalSlide 0.3s ease;
         }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        @keyframes modalSlide {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
+            padding: 24px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
-
-        .modal-title {
-            font-size: 24px;
-            color: #333;
+        .modal-header h3 {
+            font-size: 20px; font-weight: 800;
+            color: var(--primary-dark);
         }
-
-        .close-btn {
-            background: none;
+        .modal-close {
+            width: 36px; height: 36px;
+            border-radius: 50%;
             border: none;
-            font-size: 28px;
+            background: var(--border);
             cursor: pointer;
-            color: #999;
+            font-size: 18px;
+            transition: var(--transition);
+        }
+        .modal-close:hover { background: var(--danger); color: white; }
+
+        .modal-body { padding: 24px 30px; }
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: flex-end; gap: 12px;
         }
 
-        .close-btn:hover {
-            color: #333;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; font-weight: 600;
+            margin-bottom: 8px; color: var(--text);
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%; padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26,95,158,0.1);
+        }
+        .form-group textarea {
+            resize: vertical; min-height: 100px;
         }
 
-        /* Attendees Input */
-        .attendees-input {
-            display: flex;
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
-            margin-bottom: 10px;
         }
 
-        .attendees-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+        /* ===== TASKS TABLE IN MODAL ===== */
+        .tasks-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid var(--border);
+        }
+        .tasks-section h4 {
+            font-size: 16px; font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
         }
 
-        .attendee-tag {
-            background: #667eea;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
+        .task-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+        }
+        .task-row input, .task-row select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
             font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-
-        .attendee-tag button {
-            background: none;
-            border: none;
+        .btn-remove-task {
+            background: var(--danger);
             color: white;
+            border: none;
+            width: 32px; height: 32px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
         }
-
-        /* File Upload Area */
-        .file-upload-area {
-            border: 2px dashed #ccc;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .file-upload-area:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-
-        .file-list {
-            margin-top: 15px;
-        }
-
-        .file-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        /* Checklist Templates */
-        .checklist-templates {
-            margin-bottom: 20px;
-        }
-
-        .template-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: right;
-            transition: all 0.3s;
-            font-size: 15px;
-        }
-
-        .template-btn:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .template-btn.active {
-            border-color: #667eea;
-            background: #667eea;
+        .btn-add-task {
+            background: var(--success);
             color: white;
-        }
-
-        .template-preview {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
             margin-top: 10px;
-            max-height: 200px;
-            overflow-y: auto;
         }
 
-        .template-preview h4 {
-            color: #667eea;
-            margin-bottom: 10px;
+        /* ===== TASKS TAB ===== */
+        .tasks-list {
+            display: flex; flex-direction: column; gap: 16px;
         }
-
-        .template-preview ul {
-            list-style: none;
-            padding: 0;
+        .task-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 20px;
+            align-items: center;
+            border-right: 4px solid var(--success);
+            transition: var(--transition);
         }
+        .task-card:hover { transform: translateX(-4px); }
+        .task-card.overdue { border-right-color: var(--danger); }
+        .task-card.warning { border-right-color: var(--warning); }
+        .task-card.upcoming { border-right-color: var(--info); }
 
-        .template-preview li {
-            padding: 5px 0;
-            color: #555;
+        .task-card .task-title {
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 6px;
         }
-
-        .template-preview li:before {
-            content: "☑️ ";
-            margin-left: 5px;
+        .task-card .task-meta {
+            font-size: 13px; color: var(--text-light);
         }
-
-        /* Memo Section */
-        .memo-section {
-            background: #fff3e0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
-            border: 1px solid #ffcc80;
+        .task-card .task-status {
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 12px; font-weight: 700;
         }
+        .status-overdue { background: rgba(231,76,60,0.1); color: var(--danger); }
+        .status-warning { background: rgba(243,156,18,0.1); color: var(--warning); }
+        .status-ok { background: rgba(39,174,96,0.1); color: var(--success); }
+        .status-upcoming { background: rgba(52,152,219,0.1); color: var(--info); }
 
-        .memo-section h4 {
-            color: #e65100;
-            margin-bottom: 10px;
+        /* ===== NOTES TAB ===== */
+        .note-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            border-right: 4px solid var(--secondary);
         }
-
-        .memo-content {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            line-height: 1.8;
+        .note-card .note-header {
+            display: flex; justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .note-card .note-title {
+            font-weight: 700; font-size: 16px;
+            color: var(--primary-dark);
+        }
+        .note-card .note-date {
+            font-size: 13px; color: var(--text-light);
+        }
+        .note-card .note-content {
+            font-size: 14px; line-height: 1.8;
+            color: var(--text);
             white-space: pre-wrap;
         }
 
-        /* WhatsApp Alert Section */
-        .whatsapp-section {
-            background: #dcf8c6;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            .login-screen, .app-header, .toolbar, .card-actions, .btn, .modal-overlay,
+            .tabs-bar, .btn-logout, .user-badge { display: none !important; }
+            .main-content { padding: 0; max-width: 100%; }
+            .meeting-card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+            body { background: white; }
 
-        .whatsapp-section h4 {
-            color: #075e54;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            .print-header {
+                display: flex !important;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px;
+                border-bottom: 3px solid var(--primary);
+                margin-bottom: 30px;
+            }
+            .print-logo {
+                width: 80px; height: 80px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .print-logo img { max-width: 100%; max-height: 100%; }
+            .print-title {
+                text-align: center;
+                flex: 1;
+            }
+            .print-title h1 {
+                font-size: 24px; color: var(--primary-dark);
+                margin-bottom: 8px;
+            }
+            .print-title p {
+                font-size: 14px; color: var(--text-light);
+            }
+            .print-date {
+                text-align: left;
+                font-size: 14px;
+            }
         }
+        .print-header { display: none; }
 
-        .alert-item {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .alert-status {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-
-        .alert-status.pending {
-            background: #f39c12;
-            color: white;
-        }
-
-        .alert-status.sent {
-            background: #27ae60;
-            color: white;
-        }
-
-        /* Empty State */
+        /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
-            padding: 40px;
-            color: #999;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+        .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+        .empty-state h3 { font-size: 20px; margin-bottom: 8px; }
+
+        /* ===== DASHBOARD ===== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+        .dashboard-card.wide {
+            grid-column: 1 / -1;
+        }
+        .dashboard-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
         }
 
-        .empty-state .icon {
-            font-size: 60px;
-            margin-bottom: 15px;
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
         }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .stat-box {
+            text-align: center;
+            padding: 20px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
         }
-
-        .fade-in {
-            animation: fadeIn 0.5s;
+        .stat-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
         }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 4px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Notification Badge */
-        .badge {
-            background: #e74c3c;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 12px;
-            margin-right: 5px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 15px;
-            color: #666;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .tab:hover:not(.active) {
-            background: #f0f0f0;
-        }
-
-        /* Checklist Items in Meeting */
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #f0f4ff;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            gap: 10px;
-        }
-
-        .checklist-item.checked {
-            background: #e8f5e9;
-        }
-
-        .checklist-item.checked span {
-            text-decoration: line-through;
-            color: #27ae60;
-        }
-
-        .checklist-number {
-            background: #667eea;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+        .stat-box-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 24px;
+            margin: 0 auto 12px;
+        }
+        .stat-box-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+        .stat-box-label {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 4px;
         }
 
-        /* Google Drive Status */
-        .drive-status {
+        .dash-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 15px;
-            background: #e8f5e9;
-            border-radius: 20px;
-            font-size: 13px;
-            color: #2e7d32;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            border-right: 3px solid var(--primary);
+            transition: var(--transition);
+        }
+        .dash-item:hover {
+            transform: translateX(-4px);
+            box-shadow: var(--shadow);
+        }
+        .dash-item.external { border-right-color: #e67e22; }
+        .dash-item.visit { border-right-color: #9b59b6; }
+        .dash-item.overdue { border-right-color: var(--danger); }
+        .dash-item.warning { border-right-color: var(--warning); }
+
+        .dash-item-time {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 80px;
+        }
+        .dash-item-title {
+            font-weight: 600;
+            font-size: 14px;
+            flex: 1;
+        }
+        .dash-item-meta {
+            font-size: 12px;
+            color: var(--text-light);
         }
 
-        .drive-status.disconnected {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        /* Export/Import Buttons */
-        .data-actions {
+        .quick-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
             flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
 
-        .memo-textarea {
-            width: 100%;
-            min-height: 150px;
-            padding: 15px;
-            border: 2px solid #ffcc80;
-            border-radius: 10px;
-            font-size: 15px;
-            line-height: 1.8;
-            resize: vertical;
+        /* ===== PRINT IMPROVEMENTS ===== */
+        .print-only { display: none; }
+        @media print {
+            .login-screen, .app-header, .toolbar, .card-actions, .btn, .modal-overlay,
+            .tabs-bar, .btn-logout, .user-badge, .quick-actions, .dashboard-card canvas { display: none !important; }
+            .main-content { padding: 0; max-width: 100%; }
+            body { background: white; }
+
+            .print-only { display: block !important; }
+
+            .print-header {
+                display: flex !important;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px;
+                border-bottom: 3px solid var(--primary);
+                margin-bottom: 30px;
+            }
+            .print-logo {
+                width: 80px; height: 80px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .print-logo img { max-width: 100%; max-height: 100%; }
+            .print-title {
+                text-align: center;
+                flex: 1;
+            }
+            .print-title h1 {
+                font-size: 24px; color: var(--primary-dark);
+                margin-bottom: 8px;
+            }
+            .print-title p {
+                font-size: 14px; color: var(--text-light);
+            }
+            .print-date {
+                text-align: left;
+                font-size: 14px;
+            }
+
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            .print-table th {
+                background: var(--primary);
+                color: white;
+                padding: 12px;
+                text-align: right;
+                font-size: 14px;
+            }
+            .print-table td {
+                padding: 10px 12px;
+                border-bottom: 1px solid #ddd;
+                font-size: 13px;
+            }
+            .print-table tr:nth-child(even) {
+                background: #f9f9f9;
+            }
+
+            .meeting-card, .task-card, .note-card, .dash-item {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+                margin-bottom: 10px;
+            }
+
+            h2, h3 {
+                color: var(--primary-dark) !important;
+                page-break-after: avoid;
+            }
         }
 
-        .memo-textarea:focus {
-            outline: none;
-            border-color: #f39c12;
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header-greeting { display: none; }
+            .meetings-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .task-row { grid-template-columns: 1fr; }
+            .task-card { grid-template-columns: 1fr; gap: 10px; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .search-box input, .search-box input:focus { width: 100%; }
         }
+
+        /* ===== READ ONLY MODE ===== */
+        .read-only .btn-add,
+        .read-only .btn-icon.edit,
+        .read-only .btn-icon.delete,
+        .read-only .btn-add-task,
+        .read-only .btn-remove-task,
+        .read-only .modal-footer {
+            display: none !important;
+        }
+        .read-only .meeting-card { cursor: default; }
     </style>
+<base target="_blank">
 </head>
 <body>
 
-    <!-- Login Screen -->
-    <div class="login-screen" id="loginScreen">
-        <div class="login-box">
-            <div style="font-size: 60px; margin-bottom: 20px;">📅</div>
-            <h1>مدير الاجتماعات</h1>
-            <p>نظام إدارة الاجتماعات والمهام</p>
-            <input type="password" id="passwordInput" placeholder="أدخل كلمة المرور..." onkeypress="if(event.key==='Enter')login()">
-            <button class="login-btn" onclick="login()">دخول</button>
-            <div class="error-msg" id="errorMsg">كلمة المرور غير صحيحة!</div>
-            <p style="margin-top: 20px; font-size: 12px; color: #999;">
-                كلمة المرور الافتراضية: <strong>admin123</strong>
-            </p>
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/c/c2/General_Authority_for_Health_Care_Logo.png/220px-General_Authority_for_Health_Care_Logo.png" 
+                 alt="HIO Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='HIO';">
+        </div>
+        <h1>نظام متابعة الاجتماعات</h1>
+        <p class="subtitle">الهيئة العامة للرعاية الصحية</p>
+
+        <div class="form-group">
+            <label>👤 اختر الحساب</label>
+            <select id="loginUser">
+                <option value="">-- اختر المستخدم --</option>
+                <option value="amir">د. أمير التلواني - المدير التنفيذي</option>
+                <option value="badr">د. محمد بدر - رئيس الإدارة المركزية</option>
+                <option value="manager">مسؤول الاجتماعات</option>
+                <option value="viewer">عضو الإدارة المركزية</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>🔑 كلمة المرور</label>
+            <input type="password" id="loginPass" placeholder="أدخل كلمة المرور">
+        </div>
+
+        <button class="btn btn-primary" onclick="doLogin()">
+            <span>🚀</span> دخول النظام
+        </button>
+
+        <div class="login-error" id="loginError">
+            ❌ كلمة المرور غير صحيحة
+        </div>
+    </div>
+</div>
+
+<!-- ===== APP HEADER ===== -->
+<header class="app-header" id="appHeader" style="display:none;">
+    <div class="header-top">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/c/c2/General_Authority_for_Health_Care_Logo.png/220px-General_Authority_for_Health_Care_Logo.png" 
+                     alt="HIO" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>HIO</span>';">
+            </div>
+            <div class="header-title">
+                <h2>نظام متابعة الاجتماعات</h2>
+                <span>الهيئة العامة للرعاية الصحية</span>
+            </div>
+        </div>
+
+        <div class="header-greeting" id="headerGreeting">
+            <div class="greeting-text" id="greetingText">صباح الخير</div>
+            <div class="greeting-name" id="greetingName">د. أمير التلواني</div>
+        </div>
+
+        <div class="header-right">
+            <div class="user-badge">
+                <div class="avatar" id="userAvatar">أ</div>
+                <span id="userName">د. أمير التلواني</span>
+            </div>
+            <button class="btn-logout" onclick="doLogout()">🚪 خروج</button>
         </div>
     </div>
 
-    <!-- Main App -->
-    <div class="app-container" id="appContainer">
-        <!-- Header -->
-        <div class="header">
-            <div>
-                <h1>📅 مدير الاجتماعات</h1>
-                <p style="color: #666; margin-top: 5px;">نظام متكامل لإدارة الاجتماعات والمهام</p>
-            </div>
-            <div class="user-info">
-                <div class="drive-status" id="driveStatus">
-                    💾 محلي فقط
+    <div class="tabs-bar">
+        <button class="tab-btn active" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('meetings', this)">📅 الاجتماعات</button>
+        <button class="tab-btn" onclick="switchTab('external', this)">🌐 خارجية & زيارات</button>
+        <button class="tab-btn" onclick="switchTab('daily', this)">📋 الجدول اليومي</button>
+        <button class="tab-btn" onclick="switchTab('tasks', this)">📋 التكليفات</button>
+        <button class="tab-btn" onclick="switchTab('notes', this)">📝 المذكرات</button>
+        <button class="tab-btn" onclick="switchTab('calendar', this)">📆 التقويم</button>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main-content" id="mainContent" style="display:none;">
+
+    <!-- Print Header -->
+    <div class="print-header">
+        <div class="print-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/c/c2/General_Authority_for_Health_Care_Logo.png/220px-General_Authority_for_Health_Care_Logo.png" 
+                 alt="HIO" onerror="this.style.display='none'; this.parentElement.innerHTML='<h1>HIO</h1>';">
+        </div>
+        <div class="print-title">
+            <h1>نظام متابعة الاجتماعات</h1>
+            <p>الهيئة العامة للرعاية الصحية</p>
+        </div>
+        <div class="print-date" id="printDate"></div>
+    </div>
+
+    <!-- ===== DASHBOARD TAB ===== -->
+    <div class="tab-content active" id="tab-dashboard">
+        <div class="dashboard-grid">
+            <!-- Main Stats Row -->
+            <div class="dashboard-card wide">
+                <h3>📊 إحصائيات سريعة</h3>
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-icon" style="background:rgba(26,95,158,0.1);color:var(--primary);">📅</div>
+                        <div class="stat-box-value" id="dashTotal">0</div>
+                        <div class="stat-box-label">إجمالي الاجتماعات</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon" style="background:rgba(230,126,34,0.1);color:#e67e22;">🌐</div>
+                        <div class="stat-box-value" id="dashExternal">0</div>
+                        <div class="stat-box-label">خارجية</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon" style="background:rgba(155,89,182,0.1);color:#9b59b6;">🏥</div>
+                        <div class="stat-box-value" id="dashVisits">0</div>
+                        <div class="stat-box-label">زيارات</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon" style="background:rgba(231,76,60,0.1);color:var(--danger);">📋</div>
+                        <div class="stat-box-value" id="dashTasks">0</div>
+                        <div class="stat-box-label">تكليفات</div>
+                    </div>
                 </div>
-                <button class="sync-btn" onclick="exportToFile()">
-                    📥 تصدير البيانات
-                </button>
-                <button class="sync-btn" onclick="document.getElementById('importFile').click()">
-                    📤 استيراد البيانات
-                </button>
-                <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importFromFile(this)">
-                <span>👤 مدير النظام</span>
-                <button class="logout-btn" onclick="logout()">خروج</button>
+            </div>
+
+            <!-- Today's Meetings -->
+            <div class="dashboard-card">
+                <h3>📅 اجتماعات اليوم</h3>
+                <div id="dashToday"></div>
+            </div>
+
+            <!-- This Week -->
+            <div class="dashboard-card">
+                <h3>📆 هذا الأسبوع</h3>
+                <div id="dashWeek"></div>
+            </div>
+
+            <!-- Overdue Tasks -->
+            <div class="dashboard-card">
+                <h3>🔴 تكليفات متأخرة</h3>
+                <div id="dashOverdue"></div>
+            </div>
+
+            <!-- Upcoming Tasks -->
+            <div class="dashboard-card">
+                <h3>🟡 تكليفات قادمة</h3>
+                <div id="dashUpcoming"></div>
+            </div>
+
+            <!-- Meeting Types Chart -->
+            <div class="dashboard-card">
+                <h3>📈 توزيع الاجتماعات</h3>
+                <canvas id="meetingChart" width="300" height="200"></canvas>
+            </div>
+
+            <!-- Monthly Overview -->
+            <div class="dashboard-card wide">
+                <h3>📊 نظرة شهرية</h3>
+                <div id="dashMonthly"></div>
             </div>
         </div>
 
-        <!-- Stats -->
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="btn btn-primary" onclick="openModal()">➕ اجتماع جديد</button>
+            <button class="btn btn-print" onclick="exportToPDF()">📄 تصدير PDF</button>
+            <button class="btn btn-print" onclick="exportToExcel()">📊 تصدير Excel</button>
+            <button class="btn btn-print" onclick="backupData()">💾 نسخ احتياطي</button>
+            <button class="btn btn-print" onclick="document.getElementById('restoreInput').click()">📥 استرجاع</button>
+            <input type="file" id="restoreInput" style="display:none" accept=".json" onchange="restoreData(this)">
+        </div>
+    </div>
+
+    <!-- ===== MEETINGS TAB ===== -->
+    <div class="tab-content active" id="tab-meetings">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <input type="text" id="searchMeetings" placeholder="بحث في الاجتماعات..." oninput="filterMeetings()">
+                </div>
+                <select class="filter-select" id="filterType" onchange="filterMeetings()">
+                    <option value="">الكل</option>
+                    <option value="internal">داخلي</option>
+                    <option value="external">خارجي</option>
+                    <option value="visit">زيارة ميدانية</option>
+                </select>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-print" onclick="printSchedule('daily')">🖨️ طباعة يومي</button>
+                <button class="btn btn-print" onclick="printSchedule('weekly')">🖨️ طباعة أسبوعي</button>
+                <button class="btn btn-print" onclick="printSchedule('monthly')">🖨️ طباعة شهري</button>
+                <button class="btn btn-add" onclick="openModal()">➕ موعد جديد</button>
+            </div>
+        </div>
+
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="icon">📅</div>
-                <h3>إجمالي الاجتماعات</h3>
-                <div class="number" id="totalMeetings">0</div>
+                <div class="stat-icon" style="background:rgba(26,95,158,0.1);">📅</div>
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">إجمالي الاجتماعات</div>
             </div>
             <div class="stat-card">
-                <div class="icon">📋</div>
-                <h3>مخطط لها</h3>
-                <div class="number" id="plannedMeetings">0</div>
+                <div class="stat-icon" style="background:rgba(230,126,34,0.1);">🌐</div>
+                <div class="stat-value" id="statExternal">0</div>
+                <div class="stat-label">اجتماعات خارجية</div>
             </div>
             <div class="stat-card">
-                <div class="icon">⏰</div>
-                <h3>اجتماعات قادمة</h3>
-                <div class="number" id="upcomingMeetings">0</div>
+                <div class="stat-icon" style="background:rgba(155,89,182,0.1);">🏥</div>
+                <div class="stat-value" id="statVisits">0</div>
+                <div class="stat-label">زيارات ميدانية</div>
             </div>
             <div class="stat-card">
-                <div class="icon">✅</div>
-                <h3>تم عقدها</h3>
-                <div class="number" id="heldMeetings">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">⚠️</div>
-                <h3>مهام متأخرة</h3>
-                <div class="number" id="overdueTasks">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">📝</div>
-                <h3>المذكرات</h3>
-                <div class="number" id="totalMemos">0</div>
+                <div class="stat-icon" style="background:rgba(231,76,60,0.1);">📋</div>
+                <div class="stat-value" id="statTasks">0</div>
+                <div class="stat-label">التكليفات النشطة</div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-grid">
-            <!-- Left Column -->
-            <div>
-                <!-- Meetings Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            📅 الاجتماعات
-                            <span class="badge" id="meetingsBadge">0</span>
-                        </div>
-                        <button class="btn-primary" onclick="openModal('meetingModal')">+ اجتماع جديد</button>
-                    </div>
-                    
-                    <div class="tabs">
-                        <button class="tab active" onclick="switchTab('upcoming')">القادمة</button>
-                        <button class="tab" onclick="switchTab('planned')">مخطط لها</button>
-                        <button class="tab" onclick="switchTab('past')">السابقة</button>
-                        <button class="tab" onclick="switchTab('all')">الكل</button>
-                    </div>
-
-                    <div id="meetingsList">
-                        <div class="empty-state">
-                            <div class="icon">📭</div>
-                            <p>لا توجد اجتماعات حالياً</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- WhatsApp Alerts -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            💬 تنبيهات الواتساب
-                            <span class="badge" id="alertsBadge">0</span>
-                        </div>
-                    </div>
-                    <div id="alertsList">
-                        <div class="empty-state">
-                            <div class="icon">📱</div>
-                            <p>لا توجد تنبيهات</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column -->
-            <div>
-                <!-- Tasks Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            ✅ المهام والتوصيات
-                            <span class="badge" id="tasksBadge">0</span>
-                        </div>
-                    </div>
-                    <div id="tasksList">
-                        <div class="empty-state">
-                            <div class="icon">📝</div>
-                            <p>لا توجد مهام حالياً</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Memos Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            📝 المذكرات
-                            <span class="badge" id="memosBadge">0</span>
-                        </div>
-                    </div>
-                    <div id="memosList">
-                        <div class="empty-state">
-                            <div class="icon">📄</div>
-                            <p>لا توجد مذكرات</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">📊 ملخص سريع</div>
-                    </div>
-                    <div style="line-height: 2;">
-                        <p>🟢 <strong>اجتماعات هذا الشهر:</strong> <span id="monthMeetings">0</span></p>
-                        <p>📋 <strong>مخططة:</strong> <span id="plannedCount">0</span></p>
-                        <p>🔴 <strong>مهام عاجلة:</strong> <span id="urgentTasks">0</span></p>
-                        <p>📎 <strong>الملفات المرفقة:</strong> <span id="totalFiles">0</span></p>
-                        <p>👥 <strong>إجمالي الحضور:</strong> <span id="totalAttendees">0</span></p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="meetings-grid" id="meetingsGrid"></div>
     </div>
 
-    <!-- Meeting Modal -->
-    <div class="modal-overlay" id="meetingModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title">📝 اجتماع جديد</h2>
-                <button class="close-btn" onclick="closeModal('meetingModal')">&times;</button>
+    <!-- ===== EXTERNAL & VISITS TAB ===== -->
+    <div class="tab-content" id="tab-external">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <input type="text" id="searchExternal" placeholder="بحث..." oninput="filterExternal()">
+                </div>
+                <select class="filter-select" id="filterExtType" onchange="filterExternal()">
+                    <option value="">الكل</option>
+                    <option value="external">🌐 اجتماعات خارجية</option>
+                    <option value="visit">🏥 زيارات ميدانية</option>
+                </select>
             </div>
-            
-            <form id="meetingForm" onsubmit="saveMeeting(event)">
+            <div class="toolbar-right">
+                <button class="btn btn-add" onclick="openModal('external')">➕ إضافة خارجية/زيارة</button>
+            </div>
+        </div>
+        <div class="meetings-grid" id="externalGrid"></div>
+    </div>
+
+    <!-- ===== DAILY SCHEDULE TAB ===== -->
+    <div class="tab-content" id="tab-daily">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <h3 style="margin:0;color:var(--primary-dark);">📋 الجدول اليومي الثابت</h3>
+            </div>
+        </div>
+        <div id="dailyScheduleList"></div>
+    </div>
+
+    <!-- ===== TASKS TAB ===== -->
+    <div class="tab-content" id="tab-tasks">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <input type="text" id="searchTasks" placeholder="بحث في التكليفات..." oninput="filterTasks()">
+                </div>
+                <select class="filter-select" id="filterTaskStatus" onchange="filterTasks()">
+                    <option value="">الكل</option>
+                    <option value="overdue">🔴 متأخرة</option>
+                    <option value="warning">🟡 خلال 3 أيام</option>
+                    <option value="upcoming">🔵 قادمة</option>
+                    <option value="ok">🟢 في الميعاد</option>
+                </select>
+            </div>
+        </div>
+        <div class="tasks-list" id="tasksList"></div>
+    </div>
+
+    <!-- ===== NOTES TAB ===== -->
+    <div class="tab-content" id="tab-notes">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <input type="text" id="searchNotes" placeholder="بحث في المذكرات..." oninput="filterNotes()">
+                </div>
+            </div>
+        </div>
+        <div id="notesList"></div>
+    </div>
+
+    <!-- ===== CALENDAR TAB ===== -->
+    <div class="tab-content" id="tab-calendar">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button class="btn" onclick="changeMonth(-1)">◀ الشهر السابق</button>
+                <h3 id="calendarMonth" style="margin:0 20px;"></h3>
+                <button class="btn" onclick="changeMonth(1)">الشهر التالي ▶</button>
+            </div>
+        </div>
+        <div id="calendarGrid" style="background:white;border-radius:16px;padding:20px;box-shadow:var(--shadow);"></div>
+    </div>
+</main>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">➕ اجتماع جديد</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="mId">
+            <div class="form-row">
                 <div class="form-group">
-                    <label>نوع الاجتماع *</label>
-                    <select id="meetingType" required onchange="toggleMeetingType()">
-                        <option value="upcoming">📅 اجتماع قادم (مع تاريخ محدد)</option>
-                        <option value="planned">📋 مخطط له (بدون تاريخ محدد)</option>
+                    <label>📌 عنوان الاجتماع</label>
+                    <input type="text" id="mTitle" placeholder="عنوان الاجتماع">
+                </div>
+                <div class="form-group">
+                    <label>📂 النوع</label>
+                    <select id="mType">
+                        <option value="internal">📋 داخلي</option>
+                        <option value="external">🌐 خارجي</option>
+                        <option value="visit">🏥 زيارة ميدانية</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>عنوان الاجتماع *</label>
-                    <input type="text" id="meetingTitle" required placeholder="مثال: اجتماع فريق التسويق">
-                </div>
-
-                <div class="form-group" id="dateGroup">
-                    <label>تاريخ ووقت الاجتماع *</label>
-                    <input type="datetime-local" id="meetingDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label>مصدر الاجتماع / الجهة المنظمة *</label>
-                    <input type="text" id="meetingSource" required placeholder="مثال: قسم الموارد البشرية / شركة XYZ">
-                </div>
-
-                <div class="form-group">
-                    <label>مكان/رابط الاجتماع</label>
-                    <input type="text" id="meetingLocation" placeholder="مثال: قاعة الاجتماعات / Zoom link">
-                </div>
-
-                <div class="form-group">
-                    <label>الحضور</label>
-                    <div class="attendees-input">
-                        <input type="text" id="attendeeInput" placeholder="اسم الحاضر" onkeypress="if(event.key==='Enter'){event.preventDefault();addAttendee()}">
-                        <button type="button" class="btn-primary" onclick="addAttendee()">إضافة</button>
-                    </div>
-                    <div class="attendees-list" id="attendeesList"></div>
-                </div>
-
-                <!-- Checklist Templates -->
-                <div class="form-group">
-                    <label>📋 قالب نقاط الاجتماع (Checklist)</label>
-                    <div class="checklist-templates">
-                        <button type="button" class="template-btn" onclick="selectTemplate('general')" id="template-general">
-                            📋 اجتماع عام
-                        </button>
-                        <button type="button" class="template-btn" onclick="selectTemplate('weekly')" id="template-weekly">
-                            📊 الاجتماع الأسبوعي
-                        </button>
-                        <button type="button" class="template-btn" onclick="selectTemplate('project')" id="template-project">
-                            🚀 اجتماع مشروع
-                        </button>
-                        <button type="button" class="template-btn" onclick="selectTemplate('review')" id="template-review">
-                            🔍 مراجعة الأداء
-                        </button>
-                        <button type="button" class="template-btn" onclick="selectTemplate('planning')" id="template-planning">
-                            🎯 تخطيط استراتيجي
-                        </button>
-                    </div>
-                    
-                    <div class="template-preview" id="templatePreview" style="display: none;">
-                        <h4>📋 النقاط المختارة:</h4>
-                        <ul id="templateItems"></ul>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>الملفات المرفقة</label>
-                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-                        <div style="font-size: 40px; margin-bottom: 10px;">📎</div>
-                        <p>اضغط لاختيار الملفات أو اسحبها هنا</p>
-                        <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFiles(this)">
-                    </div>
-                    <div class="file-list" id="fileList"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>مهام إضافية / توصيات</label>
-                    <div class="attendees-input">
-                        <input type="text" id="taskInput" placeholder="المهمة / التوصية" onkeypress="if(event.key==='Enter'){event.preventDefault();addTask()}">
-                        <button type="button" class="btn-primary" onclick="addTask()">إضافة</button>
-                    </div>
-                    <div id="tasksPreview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>📝 مذكرة الاجتماع (Memo)</label>
-                    <textarea class="memo-textarea" id="meetingMemo" placeholder="اكتبي هنا ملخص الاجتماع، القرارات، التوصيات، الملاحظات المهمة..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>ملاحظات إضافية</label>
-                    <textarea id="meetingNotes" placeholder="ملاحظات إضافية عن الاجتماع..."></textarea>
-                </div>
-
-                <div class="form-group" id="alertGroup">
-                    <label>
-                        <input type="checkbox" id="whatsappAlert" checked>
-                        إرسال تنبيه واتساب قبل الاجتماع بـ:
-                    </label>
-                    <select id="alertTime" style="margin-top: 10px;">
-                        <option value="15">15 دقيقة</option>
-                        <option value="30" selected>30 دقيقة</option>
-                        <option value="60">1 ساعة</option>
-                        <option value="1440">يوم كامل</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">
-                    💾 حفظ الاجتماع
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Meeting Details Modal -->
-    <div class="modal-overlay" id="detailsModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title" id="detailsTitle">تفاصيل الاجتماع</h2>
-                <button class="close-btn" onclick="closeModal('detailsModal')">&times;</button>
             </div>
-            <div id="detailsContent"></div>
-        </div>
-    </div>
-
-    <!-- Memo Modal -->
-    <div class="modal-overlay" id="memoModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title" id="memoTitle">مذكرة الاجتماع</h2>
-                <button class="close-btn" onclick="closeModal('memoModal')">&times;</button>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>📅 التاريخ</label>
+                    <input type="date" id="mDate">
+                </div>
+                <div class="form-group">
+                    <label>⏰ الوقت</label>
+                    <div class="time-row">
+                        <select id="mHour">
+                            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                            <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                        </select>
+                        <select id="mMinute">
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <select id="mPeriod">
+                            <option value="ص">صباحاً</option>
+                            <option value="م">مساءً</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div id="memoContent"></div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>📍 المكان</label>
+                    <input type="text" id="mLocation" placeholder="مكان الانعقاد">
+                </div>
+                <div class="form-group">
+                    <label>👥 الحضور</label>
+                    <input type="text" id="mAttendees" placeholder="أسماء الحضور">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>📝 الملاحظات والقرارات</label>
+                <textarea id="mNotes" placeholder="القرارات المتخذة، التوصيات، التكليفات..."></textarea>
+            </div>
+
+            <!-- Tasks Section -->
+            <div class="tasks-section">
+                <h4>📋 التكليفات</h4>
+                <div id="tasksContainer"></div>
+                <button type="button" class="btn-add-task" onclick="addTaskRow()">➕ إضافة تكليف</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" style="background:var(--border);" onclick="closeModal()">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveMeeting()">💾 حفظ</button>
         </div>
     </div>
+</div>
 
-    <script>
-        // Checklist Templates
-        const checklistTemplates = {
-            general: {
-                name: "اجتماع عام",
-                items: [
-                    "مراجعة جدول الأعمال",
-                    "مناقشة النقاط المفتوحة من الاجتماع السابق",
-                    "عرض التحديثات والتطورات",
-                    "مناقشة القضايا العالقة",
-                    "تحديد المهام والمسؤوليات",
-                    "تحديد موعد الاجتماع القادم"
-                ]
-            },
-            weekly: {
-                name: "الاجتماع الأسبوعي",
-                items: [
-                    "مراجعة إنجازات الأسبوع الماضي",
-                    "مناقشة التحديات والعقبات",
-                    "عرض خطة الأسبوع القادم",
-                    "مراجعة المؤشرات الرئيسية (KPIs)",
-                    "متابعة المهام المتأخرة",
-                    "اقتراحات التحسين"
-                ]
-            },
-            project: {
-                name: "اجتماع مشروع",
-                items: [
-                    "مراجعة حالة المشروع",
-                    "مناقشة الميزانية والتكاليف",
-                    "مراجعة الجدول الزمني",
-                    "تحديد المخاطر والحلول",
-                    "توزيع المهام على الفريق",
-                    "تحديد المعوقات وكيفية تجاوزها"
-                ]
-            },
-            review: {
-                name: "مراجعة الأداء",
-                items: [
-                    "عرض نتائج الفترة الماضية",
-                    "مقارنة الأداء بالأهداف",
-                    "تحديد نقاط القوة والضعف",
-                    "مناقشة التغذية الراجعة",
-                    "وضع خطة تحسين",
-                    "تحديد المكافآت والحوافز"
-                ]
-            },
-            planning: {
-                name: "تخطيط استراتيجي",
-                items: [
-                    "مراجعة الرؤية والرسالة",
-                    "تحليل الوضع الحالي (SWOT)",
-                    "وضع الأهداف قصيرة وطويلة المدى",
-                    "تحديد الاستراتيجيات",
-                    "توزيع الموارد",
-                    "وضع خطة تنفيذية"
-                ]
-            }
-        };
+<script>
+// ===== DATA =====
+const USERS = {
+    amir: { name: 'د. أمير التلواني', role: 'المدير التنفيذي', pass: 'amir2026', canEdit: true },
+    badr: { name: 'د. محمد بدر', role: 'رئيس الإدارة المركزية', pass: 'badr2026', canEdit: true },
+    manager: { name: 'مسؤول الاجتماعات', role: 'مسؤول الاجتماعات', pass: 'sherine2026', canEdit: true },
+    viewer: { name: 'عضو الإدارة المركزية', role: 'عضو', pass: 'viewer2026', canEdit: false }
+};
 
-        let selectedTemplate = null;
-        let templateChecklist = [];
+let currentUser = null;
+let meetings = JSON.parse(localStorage.getItem('hio_meetings_v4')) || [];
+let currentTab = 'meetings';
+let currentMonth = new Date();
+let editingId = null;
 
-        // Data Storage
-        let meetings = JSON.parse(localStorage.getItem('meetings')) || [];
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        let alerts = JSON.parse(localStorage.getItem('alerts')) || [];
-        let currentAttendees = [];
-        let currentFiles = [];
-        let currentTasks = [];
-        let currentTab = 'upcoming';
+// ===== INITIALIZE =====
+// ===== RECURRING MEETINGS CONFIG =====
+const RECURRING_MEETINGS = [
+    // Weekly
+    { title: 'Steering Meeting', frequency: 'weekly', day: 2, time: '10:00 ص', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'د. أمير التلواني، د. محمد بدر' },
 
-        // Password
-        const ADMIN_PASSWORD = 'admin123';
+    // Bi-weekly (every 2 weeks) - Hospital meetings = Zoom
+    { title: 'PHCS Meeting', frequency: 'biweekly', day: 1, time: '10:00 ص', duration: 120, location: 'Zoom', type: 'internal', attendees: 'فريق PHCS' },
+    { title: 'Hospital Meeting', frequency: 'biweekly', day: 1, time: '10:00 ص', duration: 120, location: 'Zoom', type: 'internal', attendees: 'إدارة المستشفى' },
+    { title: 'Clinical Meeting', frequency: 'biweekly', day: 3, time: '10:00 ص', duration: 120, location: 'Zoom', type: 'internal', attendees: 'الفريق الطبي' },
+    { title: 'Operational Meeting', frequency: 'biweekly', day: 3, time: '10:00 ص', duration: 120, location: 'Zoom', type: 'internal', attendees: 'فريق العمليات' },
+    { title: 'RCM / BCM Meeting', frequency: 'biweekly', day: 4, time: '10:00 ص', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'فريق الإيرادات' },
+    { title: 'HR Meeting', frequency: 'biweekly', day: 4, time: '10:00 ص', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'فريق HR' },
 
-        // Login Function
-        function login() {
-            const password = document.getElementById('passwordInput').value;
-            if (password === ADMIN_PASSWORD) {
-                document.getElementById('loginScreen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('appContainer').style.display = 'block';
-                    document.getElementById('appContainer').classList.add('fade-in');
-                    initApp();
-                }, 500);
-            } else {
-                document.getElementById('errorMsg').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('errorMsg').style.display = 'none';
-                }, 3000);
-            }
-        }
+    // Monthly (specific week)
+    { title: 'Supply Chain Meeting', frequency: 'monthly', week: 1, day: 0, time: '10:00 ص', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'فريق التوريدات' },
+    { title: 'Digital Transformation Meeting', frequency: 'monthly', week: 2, day: 0, time: '10:00 ص', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'فريق التحول الرقمي' },
+    { title: 'Maintenance Meeting', frequency: 'monthly', week: 3, day: 0, time: '10:00 ص', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'فريق الصيانة' },
+    { title: 'Mortality Meeting', frequency: 'monthly', week: 4, day: 0, time: '10:00 ص', duration: 120, location: 'Zoom', type: 'internal', attendees: 'الفريق الطبي' },
+    { title: 'KPIs Review Meeting', frequency: 'monthly', week: 2, day: 3, time: '1:00 م', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'فريق التحليل' },
+    { title: 'Hospitality, HK & Food Meeting', frequency: 'monthly', week: 3, day: 3, time: '1:00 م', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'فريق الضيافة' },
+    { title: 'Projects Review Meeting', frequency: 'monthly', week: 1, day: 3, time: '1:00 م', duration: 120, location: 'قاعة الاجتماعات بالهيئة العامة', type: 'internal', attendees: 'مديرو المشاريع' },
+    { title: 'Patient Satisfaction Meeting', frequency: 'monthly', week: 4, day: 3, time: '1:00 م', duration: 120, location: 'Zoom', type: 'internal', attendees: 'فريق الجودة' },
+];
 
-        function logout() {
-            location.reload();
-        }
+const DAILY_SCHEDULE = [
+    { from: '9:30 ص', to: '10:00 ص', title: 'EHA Pulse', type: 'internal' },
+    { from: '10:00 ص', to: '12:00 م', title: 'Internal Meeting', type: 'internal' },
+    { from: '12:00 م', to: '3:00 م', title: 'Free / External Meeting', type: 'external' },
+    { from: '1:00 م', to: '3:00 م', title: 'Wednesday Internal Meeting', type: 'internal', dayOnly: 3 },
+    { from: '3:00 م', to: '4:30 م', title: 'One on One Meeting (by request)', type: 'internal' },
+    { from: '4:30 م', to: '5:30 م', title: 'Correspondence', type: 'internal' },
+    { from: '5:30 م', to: '6:00 م', title: 'Recap / Fine Tuning', type: 'internal' },
+];
 
-        // Initialize App
-        function initApp() {
-            renderMeetings();
-            renderTasks();
-            renderAlerts();
-            renderMemos();
-            updateStats();
-            
-            setInterval(checkAlerts, 60000);
-            checkAlerts();
-        }
+function init() {
+    // Always regenerate recurring meetings for next 3 months
+    generateRecurringMeetings();
+}
 
-        // Modal Functions
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-            if (modalId === 'meetingModal') {
-                resetMeetingForm();
-            }
-        }
+function generateRecurringMeetings() {
+    const today = new Date();
+    const threeMonthsLater = new Date(today);
+    threeMonthsLater.setMonth(today.getMonth() + 3);
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
+    // Remove old auto-generated recurring meetings
+    meetings = meetings.filter(m => !m.isRecurring);
 
-        // Toggle Meeting Type
-        function toggleMeetingType() {
-            const type = document.getElementById('meetingType').value;
-            const dateGroup = document.getElementById('dateGroup');
-            const alertGroup = document.getElementById('alertGroup');
-            
-            if (type === 'planned') {
-                dateGroup.style.display = 'none';
-                alertGroup.style.display = 'none';
-                document.getElementById('meetingDate').required = false;
-            } else {
-                dateGroup.style.display = 'block';
-                alertGroup.style.display = 'block';
-                document.getElementById('meetingDate').required = true;
-            }
-        }
+    let newMeetings = [];
+    let idCounter = Date.now();
 
-        // Checklist Templates Functions
-        function selectTemplate(templateKey) {
-            document.querySelectorAll('.template-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(`template-${templateKey}`).classList.add('active');
-            
-            selectedTemplate = templateKey;
-            templateChecklist = [...checklistTemplates[templateKey].items];
-            
-            const preview = document.getElementById('templatePreview');
-            const itemsList = document.getElementById('templateItems');
-            
-            preview.style.display = 'block';
-            itemsList.innerHTML = templateChecklist.map((item, index) => `
-                <li>
-                    <input type="checkbox" checked onchange="toggleTemplateItem(${index})" style="margin-left: 5px;">
-                    ${item}
-                </li>
-            `).join('');
-        }
+    RECURRING_MEETINGS.forEach(rec => {
+        let current = new Date(today);
+        current.setHours(0,0,0,0);
 
-        function toggleTemplateItem(index) {
-            // Toggle item selection
-        }
+        while (current <= threeMonthsLater) {
+            let meetingDate = null;
 
-        // Attendees Management
-        function addAttendee() {
-            const input = document.getElementById('attendeeInput');
-            const name = input.value.trim();
-            if (name && !currentAttendees.includes(name)) {
-                currentAttendees.push(name);
-                renderAttendees();
-                input.value = '';
-            }
-        }
-
-        function removeAttendee(index) {
-            currentAttendees.splice(index, 1);
-            renderAttendees();
-        }
-
-        function renderAttendees() {
-            const container = document.getElementById('attendeesList');
-            container.innerHTML = currentAttendees.map((name, index) => `
-                <span class="attendee-tag">
-                    ${name}
-                    <button onclick="removeAttendee(${index})">&times;</button>
-                </span>
-            `).join('');
-        }
-
-        // Files Management
-        function handleFiles(input) {
-            const files = Array.from(input.files);
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    currentFiles.push({
-                        name: file.name,
-                        size: (file.size / 1024).toFixed(1) + ' KB',
-                        type: file.type,
-                        data: e.target.result // Base64 for storage
-                    });
-                    renderFiles();
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function renderFiles() {
-            const container = document.getElementById('fileList');
-            container.innerHTML = currentFiles.map((file, index) => `
-                <div class="file-item">
-                    <span>📄 ${file.name} (${file.size})</span>
-                    <button type="button" class="btn-danger" onclick="removeFile(${index})">حذف</button>
-                </div>
-            `).join('');
-        }
-
-        function removeFile(index) {
-            currentFiles.splice(index, 1);
-            renderFiles();
-        }
-
-        // Tasks Management in Form
-        function addTask() {
-            const input = document.getElementById('taskInput');
-            const text = input.value.trim();
-            if (text) {
-                currentTasks.push({ text, completed: false, id: Date.now() });
-                renderTasksPreview();
-                input.value = '';
-            }
-        }
-
-        function renderTasksPreview() {
-            const container = document.getElementById('tasksPreview');
-            container.innerHTML = currentTasks.map((task, index) => `
-                <div class="task-item">
-                    <span class="task-text">${task.text}</span>
-                    <button type="button" class="btn-danger" onclick="removeTask(${index})">حذف</button>
-                </div>
-            `).join('');
-        }
-
-        function removeTask(index) {
-            currentTasks.splice(index, 1);
-            renderTasksPreview();
-        }
-
-        // Save Meeting
-        function saveMeeting(e) {
-            e.preventDefault();
-            
-            const meetingType = document.getElementById('meetingType').value;
-            const selectedChecklist = [];
-            
-            if (selectedTemplate) {
-                const checkboxes = document.querySelectorAll('#templateItems input[type="checkbox"]');
-                checkboxes.forEach((cb, index) => {
-                    if (cb.checked) {
-                        selectedChecklist.push({
-                            text: checklistTemplates[selectedTemplate].items[index],
-                            completed: false
-                        });
-                    }
-                });
-            }
-
-            const meeting = {
-                id: Date.now(),
-                type: meetingType,
-                title: document.getElementById('meetingTitle').value,
-                date: meetingType === 'planned' ? null : document.getElementById('meetingDate').value,
-                source: document.getElementById('meetingSource').value,
-                location: document.getElementById('meetingLocation').value,
-                attendees: [...currentAttendees],
-                files: [...currentFiles],
-                tasks: [...currentTasks, ...selectedChecklist],
-                checklist: selectedChecklist,
-                template: selectedTemplate,
-                memo: document.getElementById('meetingMemo').value,
-                notes: document.getElementById('meetingNotes').value,
-                whatsappAlert: meetingType === 'upcoming' ? document.getElementById('whatsappAlert').checked : false,
-                alertTime: meetingType === 'upcoming' ? parseInt(document.getElementById('alertTime').value) : 0,
-                completed: false,
-                createdAt: new Date().toISOString()
-            };
-
-            meetings.push(meeting);
-            saveData();
-
-            if (meeting.whatsappAlert && meeting.date) {
-                createAlert(meeting);
-            }
-
-            closeModal('meetingModal');
-            renderMeetings();
-            renderTasks();
-            renderAlerts();
-            renderMemos();
-            updateStats();
-
-            showNotification('✅ تم حفظ الاجتماع بنجاح!');
-        }
-
-        function createAlert(meeting) {
-            const meetingDate = new Date(meeting.date);
-            const alertTime = meeting.alertTime;
-            const alertDate = new Date(meetingDate.getTime() - (alertTime * 60000));
-            
-            const alert = {
-                id: Date.now(),
-                meetingId: meeting.id,
-                meetingTitle: meeting.title,
-                alertTime: alertDate.toISOString(),
-                status: 'pending',
-                type: 'whatsapp'
-            };
-            
-            alerts.push(alert);
-            saveData();
-        }
-
-        // Check and Send Alerts
-        function checkAlerts() {
-            const now = new Date();
-            alerts.forEach(alert => {
-                if (alert.status === 'pending') {
-                    const alertTime = new Date(alert.alertTime);
-                    if (now >= alertTime) {
-                        sendWhatsAppAlert(alert);
-                        alert.status = 'sent';
-                    }
+            if (rec.frequency === 'weekly') {
+                // Find next occurrence of this day
+                const dayDiff = (rec.day - current.getDay() + 7) % 7;
+                meetingDate = new Date(current);
+                meetingDate.setDate(current.getDate() + dayDiff);
+                if (meetingDate >= today) {
+                    newMeetings.push(createMeetingObj(rec, meetingDate, idCounter++));
                 }
+                current.setDate(current.getDate() + 7);
+            }
+            else if (rec.frequency === 'biweekly') {
+                const dayDiff = (rec.day - current.getDay() + 7) % 7;
+                meetingDate = new Date(current);
+                meetingDate.setDate(current.getDate() + dayDiff);
+                if (meetingDate >= today) {
+                    newMeetings.push(createMeetingObj(rec, meetingDate, idCounter++));
+                }
+                current.setDate(current.getDate() + 14);
+            }
+            else if (rec.frequency === 'monthly') {
+                // Find the specific week in this month
+                const year = current.getFullYear();
+                const month = current.getMonth();
+                const firstDayOfMonth = new Date(year, month, 1);
+                let targetDay = 1 + (rec.day - firstDayOfMonth.getDay() + 7) % 7 + (rec.week - 1) * 7;
+
+                // Handle case where week 5 might not exist
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+                if (targetDay > lastDayOfMonth.getDate()) {
+                    targetDay = 1 + (rec.day - firstDayOfMonth.getDay() + 7) % 7 + 3 * 7;
+                }
+
+                meetingDate = new Date(year, month, targetDay);
+                if (meetingDate >= today) {
+                    newMeetings.push(createMeetingObj(rec, meetingDate, idCounter++));
+                }
+                current.setMonth(current.getMonth() + 1);
+                current.setDate(1);
+            }
+        }
+    });
+
+    // Add daily schedule as notes in each day
+    // (We'll add this as a special daily schedule view)
+
+    meetings = [...meetings, ...newMeetings];
+    saveData();
+}
+
+function createMeetingObj(rec, date, id) {
+    return {
+        id: id,
+        title: rec.title,
+        type: rec.type,
+        date: formatDate(date),
+        time: rec.time,
+        duration: rec.duration,
+        location: rec.location,
+        attendees: rec.attendees,
+        notes: `اجتماع دوري ${rec.frequency === 'weekly' ? 'أسبوعي' : rec.frequency === 'biweekly' ? 'نصف شهري' : 'شهري'}\nالمدة: ${rec.duration} دقيقة`,
+        tasks: [],
+        isRecurring: true
+    };
+}
+
+function getDailySchedule(dayOfWeek) {
+    return DAILY_SCHEDULE.filter(s => !s.dayOnly || s.dayOnly === dayOfWeek);
+}
+
+function formatDate(d) {
+    return d.toISOString().split('T')[0];
+}
+
+function saveData() {
+    localStorage.setItem('hio_meetings_v4', JSON.stringify(meetings));
+}
+
+// ===== LOGIN =====
+function doLogin() {
+    const userKey = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    const errorDiv = document.getElementById('loginError');
+
+    if (!userKey || !USERS[userKey]) {
+        errorDiv.textContent = '❌ اختر المستخدم أولاً';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    if (USERS[userKey].pass !== pass) {
+        errorDiv.textContent = '❌ كلمة المرور غير صحيحة';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    currentUser = { key: userKey, ...USERS[userKey] };
+    errorDiv.style.display = 'none';
+
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appHeader').style.display = 'block';
+    document.getElementById('mainContent').style.display = 'block';
+
+    updateGreeting();
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userAvatar').textContent = currentUser.name.charAt(0);
+    document.getElementById('greetingName').textContent = currentUser.name;
+
+    if (!currentUser.canEdit) {
+        document.body.classList.add('read-only');
+    } else {
+        document.body.classList.remove('read-only');
+    }
+
+    renderAll();
+}
+
+function doLogout() {
+    currentUser = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('appHeader').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+}
+
+function updateGreeting() {
+    const hour = new Date().getHours();
+    let greeting = '';
+    if (hour >= 5 && hour < 12) greeting = '☀️ صباح الخير';
+    else if (hour >= 12 && hour < 17) greeting = '🌤️ مساء الخير';
+    else if (hour >= 17 && hour < 21) greeting = '🌅 مساء الخير';
+    else greeting = '🌙 تصبح على خير';
+
+    document.getElementById('greetingText').textContent = greeting;
+}
+
+// ===== TABS =====
+function switchTab(tab, btn) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    if (btn) btn.classList.add('active');
+    else document.querySelectorAll('.tab-btn')[['meetings','external','tasks','notes','calendar'].indexOf(tab)].classList.add('active');
+
+    document.getElementById('tab-' + tab).classList.add('active');
+
+    if (tab === 'dashboard') renderDashboard();
+    else if (tab === 'meetings') renderMeetings();
+    else if (tab === 'external') renderExternal();
+    else if (tab === 'daily') renderDailySchedule();
+    else if (tab === 'tasks') renderTasks();
+    else if (tab === 'notes') renderNotes();
+    else if (tab === 'calendar') renderCalendar();
+}
+
+// ===== RENDER MEETINGS =====
+function renderMeetings() {
+    const grid = document.getElementById('meetingsGrid');
+    const search = document.getElementById('searchMeetings').value.toLowerCase();
+    const filter = document.getElementById('filterType').value;
+
+    let filtered = meetings.filter(m => {
+        if (search && !m.title.toLowerCase().includes(search)) return false;
+        if (filter && m.type !== filter) return false;
+        return true;
+    });
+
+    filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    document.getElementById('statTotal').textContent = meetings.length;
+    document.getElementById('statExternal').textContent = meetings.filter(m => m.type === 'external').length;
+    document.getElementById('statVisits').textContent = meetings.filter(m => m.type === 'visit').length;
+    document.getElementById('statTasks').textContent = meetings.reduce((sum, m) => sum + (m.tasks?.length || 0), 0);
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h3>لا توجد اجتماعات</h3><p>اضغط "موعد جديد" لإضافة اجتماع</p></div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(m => createMeetingCard(m)).join('');
+}
+
+function createMeetingCard(m) {
+    const typeLabels = { internal: 'داخلي', external: 'خارجي', visit: 'زيارة' };
+    const typeClasses = { internal: 'internal', external: 'external', visit: 'visit' };
+    const taskCount = m.tasks?.length || 0;
+
+    return `
+        <div class="meeting-card ${m.type}" onclick="viewMeeting(${m.id})">
+            ${taskCount > 0 ? `<div class="tasks-badge">${taskCount}</div>` : ''}
+            <div class="card-header">
+                <span class="card-type ${typeClasses[m.type]}">${typeLabels[m.type]}</span>
+                <span style="font-size:12px;color:var(--text-light);">${formatDateAr(m.date)}</span>
+            </div>
+            <div class="card-title">${m.title}</div>
+            <div class="card-meta">
+                <span>⏰ ${m.time}</span>
+                <span>📍 ${m.location}</span>
+                <span>👥 ${m.attendees}</span>
+            </div>
+            <div class="card-actions" onclick="event.stopPropagation()">
+                <button class="btn-icon edit" onclick="editMeeting(${m.id})" title="تعديل">✏️</button>
+                <button class="btn-icon delete" onclick="deleteMeeting(${m.id})" title="حذف">🗑️</button>
+            </div>
+        </div>
+    `;
+}
+
+function formatDateAr(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+}
+
+function filterMeetings() { renderMeetings(); }
+
+// ===== EXTERNAL & VISITS =====
+function renderExternal() {
+    const grid = document.getElementById('externalGrid');
+    const search = document.getElementById('searchExternal').value.toLowerCase();
+    const filter = document.getElementById('filterExtType').value;
+
+    let filtered = meetings.filter(m => {
+        if (m.type !== 'external' && m.type !== 'visit') return false;
+        if (search && !m.title.toLowerCase().includes(search)) return false;
+        if (filter && m.type !== filter) return false;
+        return true;
+    });
+
+    filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><div class="icon">🌐</div><h3>لا توجد زيارات أو اجتماعات خارجية</h3></div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(m => createMeetingCard(m)).join('');
+}
+
+function filterExternal() { renderExternal(); }
+
+// ===== TASKS =====
+function renderDailySchedule() {
+    const list = document.getElementById('dailyScheduleList');
+    const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:20px;">';
+
+    days.forEach((dayName, dayIndex) => {
+        const schedule = getDailySchedule(dayIndex);
+        html += `<div style="background:var(--card-bg);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-top:4px solid var(--primary);">`;
+        html += `<h4 style="margin-bottom:16px;color:var(--primary-dark);font-size:18px;">${dayName}</h4>`;
+
+        if (schedule.length === 0) {
+            html += `<div style="color:var(--text-light);text-align:center;padding:20px;">لا يوجد جدول ثابت</div>`;
+        } else {
+            html += '<div style="display:flex;flex-direction:column;gap:10px;">';
+            schedule.forEach((s, i) => {
+                const colors = ['#1a5f9e','#27ae60','#e67e22','#9b59b6','#e74c3c','#3498db','#f39c12'];
+                const color = colors[i % colors.length];
+                html += `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${color}08;border-radius:10px;border-right:3px solid ${color};">`;
+                html += `<div style="font-weight:700;color:${color};font-size:13px;min-width:100px;text-align:left;">${s.from}<br>⬇<br>${s.to}</div>`;
+                html += `<div style="flex:1;"><div style="font-weight:700;font-size:15px;">${s.title}</div><div style="font-size:12px;color:var(--text-light);">${s.type === 'external' ? '🌐 خارجي' : '📋 داخلي'}</div></div>`;
+                html += `</div>`;
             });
-            saveData();
-            renderAlerts();
+            html += '</div>';
         }
+        html += '</div>';
+    });
 
-        function sendWhatsAppAlert(alert) {
-            const meeting = meetings.find(m => m.id === alert.meetingId);
-            if (!meeting) return;
+    html += '</div>';
 
-            const message = `🔔 *تنبيه اجتماع*\n\n` +
-                `📅 *${meeting.title}*\n` +
-                `🏢 *المصدر:* ${meeting.source}\n` +
-                `⏰ *الوقت:* ${meeting.date ? formatDate(meeting.date) : 'غير محدد'}\n` +
-                `📍 *المكان:* ${meeting.location || 'غير محدد'}\n\n` +
-                `👥 *الحضور:* ${meeting.attendees.join(', ') || 'غير محدد'}\n\n` +
-                `📎 *الملفات:* ${meeting.files.length} ملف\n` +
-                `✅ *المهام:* ${meeting.tasks.length} مهمة\n\n` +
-                `لا تنسى الاجتماع! 🚀`;
+    // Add recurring meetings summary
+    html += '<div style="margin-top:30px;background:var(--card-bg);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);">';
+    html += '<h4 style="margin-bottom:16px;color:var(--primary-dark);">🔄 الاجتماعات الدورية الثابتة</h4>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">';
 
-            showNotification(`📱 تم إنشاء تنبيه واتساب: ${meeting.title}`);
-            
-            alert.whatsappMessage = message;
-            alert.whatsappLink = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    RECURRING_MEETINGS.forEach(rec => {
+        const freqLabel = rec.frequency === 'weekly' ? 'أسبوعي' : rec.frequency === 'biweekly' ? 'نصف شهري' : 'شهري';
+        const dayName = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][rec.day];
+        const weekLabel = rec.week ? `(الأسبوع ${rec.week})` : '';
+
+        html += `<div style="padding:16px;background:var(--bg);border-radius:10px;border-right:3px solid var(--info);">`;
+        html += `<div style="font-weight:700;font-size:15px;margin-bottom:8px;">${rec.title}</div>`;
+        html += `<div style="font-size:13px;color:var(--text-light);line-height:1.8;">`;
+        html += `🔄 ${freqLabel}<br>`;
+        html += `📅 ${dayName} ${weekLabel}<br>`;
+        html += `⏰ ${rec.time} | ⏱️ ${rec.duration} دقيقة<br>`;
+        html += `📍 ${rec.location}`;
+        html += `</div></div>`;
+    });
+
+    html += '</div></div>';
+
+    list.innerHTML = html;
+}
+
+function renderTasks() {
+    const list = document.getElementById('tasksList');
+    const search = document.getElementById('searchTasks').value.toLowerCase();
+    const filter = document.getElementById('filterTaskStatus').value;
+
+    let allTasks = [];
+    meetings.forEach(m => {
+        (m.tasks || []).forEach(t => {
+            allTasks.push({ ...t, meetingTitle: m.title, meetingDate: m.date, meetingId: m.id });
+        });
+    });
+
+    allTasks = allTasks.filter(t => {
+        if (search && !t.text.toLowerCase().includes(search) && !t.person.toLowerCase().includes(search)) return false;
+        if (filter) {
+            const status = getTaskStatus(t.deadline);
+            if (filter !== status) return false;
         }
+        return true;
+    });
 
-        // Render Functions
-        function renderMeetings() {
-            const container = document.getElementById('meetingsList');
-            const filtered = getFilteredMeetings();
-            
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📭</div>
-                        <p>لا توجد اجتماعات في هذا القسم</p>
-                    </div>
-                `;
-                return;
-            }
+    allTasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
-            container.innerHTML = filtered.map(meeting => {
-                const isUrgent = meeting.date && isMeetingUrgent(meeting.date) && !meeting.completed;
-                
-                return `
-                    <div class="meeting-item ${isUrgent ? 'urgent' : ''} ${meeting.completed ? 'completed' : ''} ${meeting.type === 'planned' ? 'planned' : ''}">
-                        <div class="meeting-header">
-                            <div>
-                                <div class="meeting-title">${meeting.title}</div>
-                                <span class="source-badge">🏢 ${meeting.source}</span>
-                                <span class="meeting-type ${meeting.type === 'planned' ? 'planned' : 'held'}">
-                                    ${meeting.type === 'planned' ? '📋 مخطط' : '📅 قادم'}
-                                </span>
-                            </div>
-                            <div class="meeting-date ${isUrgent ? 'urgent-date' : ''} ${meeting.completed ? 'completed-date' : ''}">
-                                ${meeting.date ? formatDate(meeting.date) : '⏳ بانتظار التحديد'}
-                            </div>
-                        </div>
-                        <div class="meeting-details">
-                            <p>📍 ${meeting.location || 'غير محدد'}</p>
-                            <p>👥 ${meeting.attendees.join(', ') || 'لا يوجد حضور'}</p>
-                            ${meeting.memo ? `<p>📝 يوجد مذكرة</p>` : ''}
-                            <p>📎 ${meeting.files.length} ملف | ✅ ${meeting.tasks.filter(t => t.completed).length}/${meeting.tasks.length} مهمة</p>
-                        </div>
-                        <div class="meeting-actions">
-                            ${meeting.type === 'planned' ? `
-                                <button class="btn-warning" onclick="convertToMeeting(${meeting.id})">📅 تحويل لاجتماع</button>
-                            ` : ''}
-                            <button class="btn-success" onclick="toggleComplete(${meeting.id})">
-                                ${meeting.completed ? '↩️ تراجع' : '✅ إنجاز'}
-                            </button>
-                            <button class="btn-info" onclick="showMemo(${meeting.id})">📝 المذكرة</button>
-                            <button class="btn-primary" onclick="showDetails(${meeting.id})">👁️ تفاصيل</button>
-                            <button class="btn-danger" onclick="deleteMeeting(${meeting.id})">🗑️ حذف</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+    if (allTasks.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>لا توجد تكليفات</h3></div>`;
+        return;
+    }
 
-        function getFilteredMeetings() {
-            const now = new Date();
-            switch(currentTab) {
-                case 'upcoming':
-                    return meetings.filter(m => m.type === 'upcoming' && new Date(m.date) >= now).sort((a, b) => new Date(a.date) - new Date(b.date));
-                case 'planned':
-                    return meetings.filter(m => m.type === 'planned').sort((a, b) => b.createdAt - a.createdAt);
-                case 'past':
-                    return meetings.filter(m => m.date && new Date(m.date) < now).sort((a, b) => new Date(b.date) - new Date(a.date));
-                default:
-                    return meetings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            }
-        }
+    list.innerHTML = allTasks.map(t => {
+        const status = getTaskStatus(t.deadline);
+        const statusLabels = {
+            overdue: { class: 'overdue', label: '🔴 متأخرة' },
+            warning: { class: 'warning', label: '🟡 خلال 3 أيام' },
+            upcoming: { class: 'upcoming', label: '🔵 قادمة' },
+            ok: { class: 'ok', label: '🟢 في الميعاد' }
+        };
+        const s = statusLabels[status];
 
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            renderMeetings();
-        }
-
-        function convertToMeeting(id) {
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-            
-            meeting.type = 'upcoming';
-            meeting.date = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
-            
-            saveData();
-            renderMeetings();
-            updateStats();
-            showNotification('📅 تم تحويله لاجتماع قادم! حددي التاريخ');
-        }
-
-        function renderTasks() {
-            const container = document.getElementById('tasksList');
-            const allTasks = [];
-            
-            meetings.forEach(meeting => {
-                meeting.tasks.forEach((task, index) => {
-                    allTasks.push({
-                        ...task,
-                        meetingTitle: meeting.title,
-                        meetingId: meeting.id,
-                        taskIndex: index
-                    });
-                });
-            });
-
-            const uncompleted = allTasks.filter(t => !t.completed);
-            
-            if (uncompleted.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🎉</div>
-                        <p>جميع المهام مكتملة!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = uncompleted.map(task => `
-                <div class="task-item">
-                    <input type="checkbox" class="task-checkbox" onchange="toggleTask(${task.meetingId}, ${task.taskIndex})">
-                    <div>
-                        <div class="task-text">${task.text}</div>
-                        <div class="task-meta">📅 ${task.meetingTitle} | 🏢 ${meetings.find(m => m.id === task.meetingId)?.source || ''}</div>
+        return `
+            <div class="task-card ${s.class}">
+                <div>
+                    <div class="task-title">${t.text}</div>
+                    <div class="task-meta">
+                        📅 ${formatDateAr(t.deadline)} | 👤 ${t.person} | 🏢 ${t.dept} | 📝 ${t.meetingTitle}
                     </div>
                 </div>
-            `).join('');
-        }
+                <div class="task-status ${'status-' + status}">${s.label}</div>
+                <div style="font-size:13px;color:var(--text-light);">الموعد: ${t.deadline}</div>
+            </div>
+        `;
+    }).join('');
+}
 
-        function renderAlerts() {
-            const container = document.getElementById('alertsList');
-            
-            if (alerts.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📱</div>
-                        <p>لا توجد تنبيهات</p>
-                    </div>
-                `;
-                return;
-            }
+function getTaskStatus(deadline) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const dl = new Date(deadline + 'T00:00:00');
+    dl.setHours(0,0,0,0);
+    const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
 
-            container.innerHTML = alerts.map(alert => `
-                <div class="alert-item">
-                    <div>
-                        <strong>${alert.meetingTitle}</strong>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            ⏰ ${formatDate(alert.alertTime)}
-                        </div>
-                        ${alert.whatsappLink ? `
-                            <a href="${alert.whatsappLink}" target="_blank" style="color: #25d366; font-size: 13px; display: inline-block; margin-top: 5px;">
-                                📱 فتح واتساب لإرسال التنبيه
-                            </a>
-                        ` : ''}
-                    </div>
-                    <span class="alert-status ${alert.status}">
-                        ${alert.status === 'pending' ? '⏳ معلق' : '✅ تم الإرسال'}
-                    </span>
-                </div>
-            `).join('');
-        }
+    if (diff < 0) return 'overdue';
+    if (diff <= 3) return 'warning';
+    if (diff <= 7) return 'upcoming';
+    return 'ok';
+}
 
-        function renderMemos() {
-            const container = document.getElementById('memosList');
-            const meetingsWithMemos = meetings.filter(m => m.memo && m.memo.trim() !== '');
-            
-            if (meetingsWithMemos.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📄</div>
-                        <p>لا توجد مذكرات</p>
-                    </div>
-                `;
-                return;
-            }
+function filterTasks() { renderTasks(); }
 
-            container.innerHTML = meetingsWithMemos.map(meeting => `
-                <div class="meeting-item" style="border-right-color: #f39c12;">
-                    <div class="meeting-header">
-                        <div class="meeting-title">${meeting.title}</div>
-                        <span class="source-badge">🏢 ${meeting.source}</span>
-                    </div>
-                    <div class="meeting-details">
-                        <p>📝 ${meeting.memo.substring(0, 100)}${meeting.memo.length > 100 ? '...' : ''}</p>
-                        <p style="margin-top: 8px;">📅 ${meeting.date ? formatDate(meeting.date) : 'مخطط'}</p>
-                    </div>
-                    <div class="meeting-actions">
-                        <button class="btn-info" onclick="showMemo(${meeting.id})">📖 قراءة المذكرة</button>
-                        <button class="btn-primary" onclick="showDetails(${meeting.id})">👁️ تفاصيل</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+// ===== NOTES =====
+function renderNotes() {
+    const list = document.getElementById('notesList');
+    const search = document.getElementById('searchNotes').value.toLowerCase();
 
-        // Actions
-        function toggleComplete(id) {
-            const meeting = meetings.find(m => m.id === id);
-            if (meeting) {
-                meeting.completed = !meeting.completed;
-                saveData();
-                renderMeetings();
-                updateStats();
-            }
-        }
+    let filtered = meetings.filter(m => m.notes && m.notes.trim());
+    if (search) {
+        filtered = filtered.filter(m => m.notes.toLowerCase().includes(search) || m.title.toLowerCase().includes(search));
+    }
 
-        function deleteMeeting(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الاجتماع؟')) {
-                meetings = meetings.filter(m => m.id !== id);
-                alerts = alerts.filter(a => a.meetingId !== id);
-                saveData();
-                renderMeetings();
-                renderTasks();
-                renderAlerts();
-                renderMemos();
-                updateStats();
-                showNotification('🗑️ تم حذف الاجتماع');
-            }
-        }
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        function toggleTask(meetingId, taskIndex) {
-            const meeting = meetings.find(m => m.id === meetingId);
-            if (meeting && meeting.tasks[taskIndex]) {
-                meeting.tasks[taskIndex].completed = !meeting.tasks[taskIndex].completed;
-                saveData();
-                renderTasks();
-                renderMeetings();
-                updateStats();
-                showNotification('✅ تم تحديث حالة المهمة');
-            }
-        }
+    if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="icon">📝</div><h3>لا توجد مذكرات</h3></div>`;
+        return;
+    }
 
-        function showDetails(id) {
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-
-            document.getElementById('detailsTitle').textContent = meeting.title;
-            
-            let checklistHtml = '';
-            if (meeting.checklist && meeting.checklist.length > 0) {
-                checklistHtml = `
-                    <h4 style="margin-top: 20px; margin-bottom: 10px;">📋 نقاط الاجتماع (${meeting.checklist.length})</h4>
-                    ${meeting.checklist.map((item, index) => `
-                        <div class="checklist-item ${item.completed ? 'checked' : ''}">
-                            <span class="checklist-number">${index + 1}</span>
-                            <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleChecklistItem(${meeting.id}, ${index})">
-                            <span>${item.text}</span>
+    list.innerHTML = filtered.map(m => `
+        <div class="note-card">
+            <div class="note-header">
+                <span class="note-title">${m.title}</span>
+                <span class="note-date">${formatDateAr(m.date)} | ${m.time}</span>
+            </div>
+            <div class="note-content">${m.notes}</div>
+            ${m.tasks?.length ? `
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                    <strong>📋 التكليفات:</strong>
+                    ${m.tasks.map(t => `
+                        <div style="margin-top:8px;padding:10px;background:var(--bg);border-radius:8px;font-size:13px;">
+                            • ${t.text} | 👤 ${t.person} | 🏢 ${t.dept} | 📅 ${t.deadline}
                         </div>
                     `).join('')}
-                `;
-            }
-
-            document.getElementById('detailsContent').innerHTML = `
-                <div style="line-height: 2;">
-                    <p><strong>📋 النوع:</strong> ${meeting.type === 'planned' ? 'مخطط له' : 'اجتماع قادم'}</p>
-                    <p><strong>🏢 المصدر:</strong> ${meeting.source}</p>
-                    <p><strong>📅 التاريخ:</strong> ${meeting.date ? formatDate(meeting.date) : 'غير محدد'}</p>
-                    <p><strong>📍 المكان:</strong> ${meeting.location || 'غير محدد'}</p>
-                    <p><strong>👥 الحضور:</strong> ${meeting.attendees.join(', ') || 'لا يوجد'}</p>
-                    <p><strong>📝 الملاحظات:</strong> ${meeting.notes || 'لا يوجد'}</p>
-                    ${meeting.template ? `<p><strong>📋 القالب:</strong> ${checklistTemplates[meeting.template]?.name || meeting.template}</p>` : ''}
-                    
-                    <h4 style="margin-top: 20px; margin-bottom: 10px;">📎 الملفات (${meeting.files.length})</h4>
-                    ${meeting.files.length > 0 ? meeting.files.map(f => `
-                        <div class="file-item">
-                            <span>📄 ${f.name} (${f.size})</span>
-                            ${f.data ? `<a href="${f.data}" download="${f.name}" class="btn-primary" style="font-size: 12px;">تحميل</a>` : ''}
-                        </div>
-                    `).join('') : '<p style="color: #999;">لا توجد ملفات</p>'}
-                    
-                    ${checklistHtml}
-                    
-                    <h4 style="margin-top: 20px; margin-bottom: 10px;">✅ المهام الإضافية (${meeting.tasks.filter(t => !meeting.checklist?.includes(t)).length})</h4>
-                    ${meeting.tasks.filter(t => !meeting.checklist?.includes(t)).length > 0 ? meeting.tasks.filter(t => !meeting.checklist?.includes(t)).map(t => `
-                        <div class="task-item ${t.completed ? 'completed' : ''}">
-                            <input type="checkbox" ${t.completed ? 'checked' : ''} disabled>
-                            <span class="task-text">${t.text}</span>
-                        </div>
-                    `).join('') : '<p style="color: #999;">لا توجد مهام إضافية</p>'}
                 </div>
-            `;
-            openModal('detailsModal');
-        }
+            ` : ''}
+        </div>
+    `).join('');
+}
 
-        function showMemo(id) {
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
+function filterNotes() { renderNotes(); }
 
-            document.getElementById('memoTitle').textContent = `📝 مذكرة: ${meeting.title}`;
-            document.getElementById('memoContent').innerHTML = `
-                <div class="memo-section">
-                    <h4>🏢 ${meeting.source} | 📅 ${meeting.date ? formatDate(meeting.date) : 'مخطط'}</h4>
-                    <div class="memo-content">${meeting.memo || 'لا توجد مذكرة لهذا الاجتماع'}</div>
-                </div>
-                <div style="margin-top: 20px;">
-                    <h4>👥 الحضور:</h4>
-                    <p>${meeting.attendees.join(', ') || 'لا يوجد'}</p>
-                    
-                    <h4 style="margin-top: 15px;">📎 الملفات:</h4>
-                    ${meeting.files.length > 0 ? meeting.files.map(f => `
-                        <div class="file-item">
-                            <span>📄 ${f.name}</span>
-                            ${f.data ? `<a href="${f.data}" download="${f.name}" class="btn-primary" style="font-size: 12px;">تحميل</a>` : ''}
-                        </div>
-                    `).join('') : '<p style="color: #999;">لا توجد ملفات</p>'}
-                </div>
-            `;
-            openModal('memoModal');
-        }
+// ===== CALENDAR =====
+function renderCalendar() {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
 
-        function toggleChecklistItem(meetingId, itemIndex) {
-            const meeting = meetings.find(m => m.id === meetingId);
-            if (meeting && meeting.checklist[itemIndex]) {
-                meeting.checklist[itemIndex].completed = !meeting.checklist[itemIndex].completed;
-                
-                const taskIndex = meeting.tasks.findIndex(t => t.text === meeting.checklist[itemIndex].text);
-                if (taskIndex !== -1) {
-                    meeting.tasks[taskIndex].completed = meeting.checklist[itemIndex].completed;
-                }
-                
-                saveData();
-                showDetails(meetingId);
-                renderTasks();
-                updateStats();
-                showNotification('✅ تم تحديث حالة النقطة');
-            }
-        }
+    const monthNames = ['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
 
-        // Stats
-        function updateStats() {
-            const now = new Date();
-            const upcoming = meetings.filter(m => m.type === 'upcoming' && m.date && new Date(m.date) >= now);
-            const planned = meetings.filter(m => m.type === 'planned');
-            const held = meetings.filter(m => m.completed);
-            
-            let totalCompletedTasks = 0;
-            let totalTasks = 0;
-            let overdueTasks = 0;
-            let totalMemos = 0;
-            
-            meetings.forEach(m => {
-                if (m.memo && m.memo.trim() !== '') totalMemos++;
-                m.tasks.forEach(t => {
-                    totalTasks++;
-                    if (t.completed) totalCompletedTasks++;
-                    else if (m.date && new Date(m.date) < now) overdueTasks++;
+    let html = '<table style="width:100%;border-collapse:collapse;text-align:center;">';
+    html += '<tr style="background:var(--primary);color:white;">';
+    ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'].forEach(d => {
+        html += `<th style="padding:14px;font-size:14px;">${d}</th>`;
+    });
+    html += '</tr>';
+
+    let day = 1;
+    for (let week = 0; week < 6; week++) {
+        html += '<tr>';
+        for (let d = 0; d < 7; d++) {
+            if (week === 0 && d < startDay) {
+                html += '<td style="padding:10px;height:100px;"></td>';
+            } else if (day > lastDay.getDate()) {
+                html += '<td style="padding:10px;height:100px;"></td>';
+            } else {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const dayMeetings = meetings.filter(m => m.date === dateStr);
+                const isToday = dateStr === formatDate(new Date());
+                const dayOfWeek = new Date(year, month, day).getDay();
+                const dailySchedule = getDailySchedule(dayOfWeek);
+
+                let cellStyle = 'padding:8px;height:100px;vertical-align:top;border:1px solid var(--border);position:relative;overflow:hidden;';
+                if (isToday) cellStyle += 'background:rgba(26,95,158,0.08);border:2px solid var(--primary);';
+
+                html += `<td style="${cellStyle}">`;
+                html += `<div style="font-weight:700;font-size:14px;${isToday?'color:var(--primary);':''}">${day}</div>`;
+
+                // Daily schedule (compact view)
+                dailySchedule.forEach(s => {
+                    html += `<div style="margin-top:2px;padding:2px 4px;background:rgba(39,174,96,0.1);color:var(--success);border-radius:4px;font-size:9px;font-weight:600;">${s.from} ${s.title.substring(0,12)}</div>`;
                 });
-            });
 
-            document.getElementById('totalMeetings').textContent = meetings.length;
-            document.getElementById('plannedMeetings').textContent = planned.length;
-            document.getElementById('upcomingMeetings').textContent = upcoming.length;
-            document.getElementById('heldMeetings').textContent = held.length;
-            document.getElementById('completedTasks').textContent = totalCompletedTasks;
-            document.getElementById('overdueTasks').textContent = overdueTasks;
-            document.getElementById('totalMemos').textContent = totalMemos;
-            
-            document.getElementById('meetingsBadge').textContent = upcoming.length;
-            document.getElementById('tasksBadge').textContent = totalTasks - totalCompletedTasks;
-            document.getElementById('alertsBadge').textContent = alerts.filter(a => a.status === 'pending').length;
-            document.getElementById('memosBadge').textContent = totalMemos;
-            
-            document.getElementById('monthMeetings').textContent = meetings.filter(m => {
-                const d = new Date(m.createdAt);
-                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-            }).length;
-            
-            document.getElementById('plannedCount').textContent = planned.length;
-            document.getElementById('urgentTasks').textContent = overdueTasks;
-            document.getElementById('totalFiles').textContent = meetings.reduce((sum, m) => sum + m.files.length, 0);
-            document.getElementById('totalAttendees').textContent = [...new Set(meetings.flatMap(m => m.attendees))].length;
-        }
+                // Meetings
+                dayMeetings.forEach(m => {
+                    const color = m.type === 'external' ? '#e67e22' : m.type === 'visit' ? '#9b59b6' : 'var(--primary)';
+                    html += `<div style="margin-top:2px;padding:2px 4px;background:${color}15;color:${color};border-radius:4px;font-size:9px;font-weight:600;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="viewMeeting(${m.id})" title="${m.title}">${m.time} ${m.title}</div>`;
+                });
 
-        // Utilities
-        function isMeetingUrgent(dateStr) {
-            const meetingDate = new Date(dateStr);
-            const now = new Date();
-            const diff = meetingDate - now;
-            return diff > 0 && diff < 24 * 60 * 60 * 1000;
-        }
-
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const options = { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true
-            };
-            return date.toLocaleDateString('ar-SA', options);
-        }
-
-        // Data Export/Import (Google Drive Alternative)
-        function exportToFile() {
-            const data = {
-                meetings,
-                tasks,
-                alerts,
-                exportDate: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `meeting-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showNotification('📥 تم تصدير البيانات بنجاح!');
-        }
-
-        function importFromFile(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.meetings) meetings = data.meetings;
-                    if (data.tasks) tasks = data.tasks;
-                    if (data.alerts) alerts = data.alerts;
-                    
-                    saveData();
-                    renderMeetings();
-                    renderTasks();
-                    renderAlerts();
-                    renderMemos();
-                    updateStats();
-                    
-                    showNotification('📤 تم استيراد البيانات بنجاح!');
-                } catch (err) {
-                    alert('❌ ملف غير صالح!');
-                }
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
-
-        function saveData() {
-            localStorage.setItem('meetings', JSON.stringify(meetings));
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            localStorage.setItem('alerts', JSON.stringify(alerts));
-        }
-
-        function resetMeetingForm() {
-            document.getElementById('meetingForm').reset();
-            currentAttendees = [];
-            currentFiles = [];
-            currentTasks = [];
-            selectedTemplate = null;
-            templateChecklist = [];
-            
-            document.querySelectorAll('.template-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('templatePreview').style.display = 'none';
-            
-            renderAttendees();
-            renderFiles();
-            renderTasksPreview();
-            
-            toggleMeetingType();
-            
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setMinutes(0);
-            document.getElementById('meetingDate').value = tomorrow.toISOString().slice(0, 16);
-        }
-
-        function showNotification(message) {
-            const notif = document.createElement('div');
-            notif.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #27ae60;
-                color: white;
-                padding: 15px 30px;
-                border-radius: 10px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-                z-index: 10000;
-                font-size: 16px;
-                animation: slideDown 0.3s;
-            `;
-            notif.textContent = message;
-            document.body.appendChild(notif);
-            
-            setTimeout(() => {
-                notif.style.animation = 'slideUp 0.3s';
-                setTimeout(() => notif.remove(), 300);
-            }, 3000);
-        }
-
-        // Close modals on outside click
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.classList.remove('active');
-                }
-            });
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setMinutes(0);
-            const dateInput = document.getElementById('meetingDate');
-            if (dateInput) {
-                dateInput.value = tomorrow.toISOString().slice(0, 16);
+                html += '</td>';
+                day++;
             }
+        }
+        html += '</tr>';
+        if (day > lastDay.getDate()) break;
+    }
+    html += '</table>';
+
+    // Add daily schedule legend
+    html += '<div style="margin-top:20px;padding:20px;background:white;border-radius:16px;box-shadow:var(--shadow);">';
+    html += '<h4 style="margin-bottom:16px;color:var(--primary-dark);">📋 الجدول اليومي الثابت</h4>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;">';
+    DAILY_SCHEDULE.forEach(s => {
+        const dayLabel = s.dayOnly !== undefined ? ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][s.dayOnly] : 'يومياً';
+        html += `<div style="padding:12px;background:var(--bg);border-radius:10px;border-right:3px solid var(--success);">`;
+        html += `<div style="font-weight:700;font-size:14px;">${s.title}</div>`;
+        html += `<div style="font-size:12px;color:var(--text-light);margin-top:4px;">⏰ ${s.from} - ${s.to} | ${dayLabel}</div>`;
+        html += `</div>`;
+    });
+    html += '</div></div>';
+
+    document.getElementById('calendarGrid').innerHTML = html;
+}
+
+function changeMonth(delta) {
+    currentMonth.setMonth(currentMonth.getMonth() + delta);
+    renderCalendar();
+}
+
+// ===== MODAL & FORM =====
+function openModal(type) {
+    if (!currentUser.canEdit) return;
+    editingId = null;
+    document.getElementById('modalTitle').textContent = type === 'external' ? '➕ إضافة خارجية/زيارة' : '➕ اجتماع جديد';
+    document.getElementById('mId').value = '';
+    document.getElementById('mTitle').value = '';
+    document.getElementById('mType').value = type === 'external' ? 'external' : 'internal';
+    document.getElementById('mDate').value = formatDate(new Date());
+    document.getElementById('mHour').value = '9';
+    document.getElementById('mMinute').value = '00';
+    document.getElementById('mPeriod').value = 'ص';
+    document.getElementById('mLocation').value = '';
+    document.getElementById('mAttendees').value = '';
+    document.getElementById('mNotes').value = '';
+    document.getElementById('tasksContainer').innerHTML = '';
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+    editingId = null;
+}
+
+function viewMeeting(id) {
+    editMeeting(id);
+}
+
+function editMeeting(id) {
+    const m = meetings.find(x => x.id === id);
+    if (!m) return;
+
+    editingId = id;
+    document.getElementById('modalTitle').textContent = '✏️ تعديل اجتماع';
+    document.getElementById('mId').value = m.id;
+    document.getElementById('mTitle').value = m.title;
+    document.getElementById('mType').value = m.type;
+    document.getElementById('mDate').value = m.date;
+
+    const timeMatch = m.time.match(/(\d+):(\d+)\s*([صم])/);
+    if (timeMatch) {
+        document.getElementById('mHour').value = timeMatch[1];
+        document.getElementById('mMinute').value = timeMatch[2];
+        document.getElementById('mPeriod').value = timeMatch[3];
+    }
+
+    document.getElementById('mLocation').value = m.location;
+    document.getElementById('mAttendees').value = m.attendees;
+    document.getElementById('mNotes').value = m.notes || '';
+
+    const container = document.getElementById('tasksContainer');
+    container.innerHTML = '';
+    if (m.tasks) {
+        m.tasks.forEach((t, i) => addTaskRow(t, i));
+    }
+
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+function addTaskRow(task, index) {
+    const container = document.getElementById('tasksContainer');
+    const div = document.createElement('div');
+    div.className = 'task-row';
+    div.innerHTML = `
+        <input type="text" placeholder="نص التكليف" class="task-text" value="${task ? task.text : ''}">
+        <input type="text" placeholder="المسؤول" class="task-person" value="${task ? task.person : ''}">
+        <input type="text" placeholder="الإدارة" class="task-dept" value="${task ? task.dept : ''}">
+        <input type="date" class="task-deadline" value="${task ? task.deadline : ''}">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove()">×</button>
+    `;
+    container.appendChild(div);
+}
+
+function saveMeeting() {
+    const title = document.getElementById('mTitle').value.trim();
+    const type = document.getElementById('mType').value;
+    const date = document.getElementById('mDate').value;
+    const hour = document.getElementById('mHour').value;
+    const minute = document.getElementById('mMinute').value;
+    const period = document.getElementById('mPeriod').value;
+    const location = document.getElementById('mLocation').value.trim();
+    const attendees = document.getElementById('mAttendees').value.trim();
+    const notes = document.getElementById('mNotes').value.trim();
+
+    if (!title || !date || !location) {
+        alert('⚠️ يرجى ملء الحقول المطلوبة');
+        return;
+    }
+
+    const time = `${hour}:${minute} ${period}`;
+
+    const tasks = [];
+    document.querySelectorAll('.task-row').forEach(row => {
+        const text = row.querySelector('.task-text').value.trim();
+        const person = row.querySelector('.task-person').value.trim();
+        const dept = row.querySelector('.task-dept').value.trim();
+        const deadline = row.querySelector('.task-deadline').value;
+        if (text && person && deadline) {
+            tasks.push({ text, person, dept, deadline });
+        }
+    });
+
+    if (editingId) {
+        const idx = meetings.findIndex(m => m.id === editingId);
+        if (idx !== -1) {
+            meetings[idx] = { ...meetings[idx], title, type, date, time, location, attendees, notes, tasks };
+        }
+    } else {
+        meetings.push({
+            id: Date.now(),
+            title, type, date, time, location, attendees, notes, tasks
         });
-    </script>
+    }
+
+    saveData();
+    closeModal();
+    renderAll();
+}
+
+function deleteMeeting(id) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا الاجتماع؟')) return;
+    meetings = meetings.filter(m => m.id !== id);
+    saveData();
+    renderAll();
+}
+
+function renderAll() {
+    renderDashboard();
+    renderMeetings();
+    renderExternal();
+    renderDailySchedule();
+    renderTasks();
+    renderNotes();
+    renderCalendar();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+    const today = new Date();
+    const todayStr = formatDate(today);
+
+    // Stats
+    document.getElementById('dashTotal').textContent = meetings.length;
+    document.getElementById('dashExternal').textContent = meetings.filter(m => m.type === 'external').length;
+    document.getElementById('dashVisits').textContent = meetings.filter(m => m.type === 'visit').length;
+    document.getElementById('dashTasks').textContent = meetings.reduce((sum, m) => sum + (m.tasks?.length || 0), 0);
+
+    // Today's meetings
+    const todayMeetings = meetings.filter(m => m.date === todayStr).sort((a,b) => a.time.localeCompare(b.time));
+    const todayDiv = document.getElementById('dashToday');
+    if (todayMeetings.length === 0) {
+        todayDiv.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="icon" style="font-size:32px;">📭</div><h3 style="font-size:14px;">لا توجد اجتماعات اليوم</h3></div>';
+    } else {
+        todayDiv.innerHTML = todayMeetings.map(m => createDashItem(m)).join('');
+    }
+
+    // This week
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    const weekMeetings = meetings.filter(m => {
+        const d = new Date(m.date);
+        return d >= weekStart && d <= weekEnd && m.date !== todayStr;
+    }).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    const weekDiv = document.getElementById('dashWeek');
+    if (weekMeetings.length === 0) {
+        weekDiv.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="icon" style="font-size:32px;">📭</div><h3 style="font-size:14px;">لا توجد اجتماعات هذا الأسبوع</h3></div>';
+    } else {
+        weekDiv.innerHTML = weekMeetings.slice(0, 5).map(m => createDashItem(m)).join('');
+        if (weekMeetings.length > 5) {
+            weekDiv.innerHTML += `<div style="text-align:center;padding:10px;color:var(--text-light);font-size:13px;">+${weekMeetings.length - 5} اجتماعات أخرى</div>`;
+        }
+    }
+
+    // Overdue tasks
+    let allTasks = [];
+    meetings.forEach(m => {
+        (m.tasks || []).forEach(t => {
+            allTasks.push({ ...t, meetingTitle: m.title, meetingDate: m.date });
+        });
+    });
+
+    const overdueTasks = allTasks.filter(t => getTaskStatus(t.deadline) === 'overdue');
+    const upcomingTasks = allTasks.filter(t => getTaskStatus(t.deadline) === 'warning');
+
+    const overdueDiv = document.getElementById('dashOverdue');
+    if (overdueTasks.length === 0) {
+        overdueDiv.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="icon" style="font-size:32px;">✅</div><h3 style="font-size:14px;">لا توجد تكليفات متأخرة</h3></div>';
+    } else {
+        overdueDiv.innerHTML = overdueTasks.slice(0, 5).map(t => `
+            <div class="dash-item overdue">
+                <div style="flex:1;">
+                    <div class="dash-item-title">${t.text}</div>
+                    <div class="dash-item-meta">👤 ${t.person} | 📝 ${t.meetingTitle}</div>
+                </div>
+                <div style="font-size:12px;color:var(--danger);font-weight:700;">${t.deadline}</div>
+            </div>
+        `).join('');
+    }
+
+    const upcomingDiv = document.getElementById('dashUpcoming');
+    if (upcomingTasks.length === 0) {
+        upcomingDiv.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="icon" style="font-size:32px;">✅</div><h3 style="font-size:14px;">لا توجد تكليفات قادمة</h3></div>';
+    } else {
+        upcomingDiv.innerHTML = upcomingTasks.slice(0, 5).map(t => `
+            <div class="dash-item warning">
+                <div style="flex:1;">
+                    <div class="dash-item-title">${t.text}</div>
+                    <div class="dash-item-meta">👤 ${t.person} | 📝 ${t.meetingTitle}</div>
+                </div>
+                <div style="font-size:12px;color:var(--warning);font-weight:700;">${t.deadline}</div>
+            </div>
+        `).join('');
+    }
+
+    // Monthly overview
+    const monthlyDiv = document.getElementById('dashMonthly');
+    const monthMeetings = meetings.filter(m => {
+        const d = new Date(m.date);
+        return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    });
+
+    const byType = { internal: 0, external: 0, visit: 0 };
+    monthMeetings.forEach(m => byType[m.type]++);
+
+    monthlyDiv.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+            <div style="padding:16px;background:rgba(26,95,158,0.05);border-radius:10px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:var(--primary);">${monthMeetings.length}</div>
+                <div style="font-size:13px;color:var(--text-light);">اجتماعات هذا الشهر</div>
+            </div>
+            <div style="padding:16px;background:rgba(26,95,158,0.05);border-radius:10px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:var(--primary);">${byType.internal}</div>
+                <div style="font-size:13px;color:var(--text-light);">داخلية</div>
+            </div>
+            <div style="padding:16px;background:rgba(230,126,34,0.05);border-radius:10px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#e67e22;">${byType.external}</div>
+                <div style="font-size:13px;color:var(--text-light);">خارجية</div>
+            </div>
+            <div style="padding:16px;background:rgba(155,89,182,0.05);border-radius:10px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#9b59b6;">${byType.visit}</div>
+                <div style="font-size:13px;color:var(--text-light);">زيارات</div>
+            </div>
+        </div>
+    `;
+
+    // Draw simple chart
+    drawChart(byType);
+}
+
+function createDashItem(m) {
+    const typeClasses = { internal: '', external: 'external', visit: 'visit' };
+    return `
+        <div class="dash-item ${typeClasses[m.type]}" onclick="viewMeeting(${m.id})" style="cursor:pointer;">
+            <div class="dash-item-time">${m.time}</div>
+            <div style="flex:1;">
+                <div class="dash-item-title">${m.title}</div>
+                <div class="dash-item-meta">📍 ${m.location} | 👥 ${m.attendees}</div>
+            </div>
+            <div style="font-size:12px;color:var(--text-light);">${formatDateAr(m.date)}</div>
+        </div>
+    `;
+}
+
+function drawChart(data) {
+    const canvas = document.getElementById('meetingChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const total = data.internal + data.external + data.visit;
+    if (total === 0) {
+        ctx.fillStyle = '#999';
+        ctx.font = '14px Cairo';
+        ctx.textAlign = 'center';
+        ctx.fillText('لا توجد بيانات', canvas.width/2, canvas.height/2);
+        return;
+    }
+
+    const colors = ['#1a5f9e', '#e67e22', '#9b59b6'];
+    const labels = ['داخلي', 'خارجي', 'زيارة'];
+    const values = [data.internal, data.external, data.visit];
+
+    // Draw bar chart
+    const barWidth = 60;
+    const maxVal = Math.max(...values);
+    const startX = 30;
+    const startY = 160;
+
+    values.forEach((val, i) => {
+        const barHeight = (val / maxVal) * 120;
+        const x = startX + i * (barWidth + 40);
+
+        // Bar
+        ctx.fillStyle = colors[i];
+        ctx.fillRect(x, startY - barHeight, barWidth, barHeight);
+
+        // Value on top
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px Cairo';
+        ctx.textAlign = 'center';
+        ctx.fillText(val, x + barWidth/2, startY - barHeight - 10);
+
+        // Label
+        ctx.font = '12px Cairo';
+        ctx.fillText(labels[i], x + barWidth/2, startY + 20);
+    });
+}
+
+// ===== EXPORT FUNCTIONS =====
+function exportToPDF() {
+    const printWindow = window.open('', '_blank');
+    const today = new Date();
+
+    let html = `
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <title>تقرير الاجتماعات - HIO</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+            body { font-family: 'Cairo', sans-serif; padding: 40px; color: #2c3e50; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #1a5f9e; padding-bottom: 20px; }
+            .header img { width: 80px; height: 80px; }
+            .header h1 { color: #1a5f9e; margin: 10px 0; }
+            .header p { color: #7f8c8d; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th { background: #1a5f9e; color: white; padding: 12px; text-align: right; }
+            td { padding: 10px; border-bottom: 1px solid #ddd; }
+            tr:nth-child(even) { background: #f9f9f9; }
+            .type-internal { color: #1a5f9e; }
+            .type-external { color: #e67e22; }
+            .type-visit { color: #9b59b6; }
+            .footer { margin-top: 40px; text-align: center; color: #7f8c8d; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px; }
+            h2 { color: #1a5f9e; margin-top: 30px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/c/c2/General_Authority_for_Health_Care_Logo.png/220px-General_Authority_for_Health_Care_Logo.png" onerror="this.style.display='none'">
+            <h1>تقرير الاجتماعات</h1>
+            <p>الهيئة العامة للرعاية الصحية</p>
+            <p>تاريخ التقرير: ${formatDateAr(formatDate(today))}</p>
+        </div>
+
+        <h2>📊 إحصائيات</h2>
+        <table>
+            <tr><th>المؤشر</th><th>القيمة</th></tr>
+            <tr><td>إجمالي الاجتماعات</td><td>${meetings.length}</td></tr>
+            <tr><td>اجتماعات داخلية</td><td>${meetings.filter(m=>m.type==='internal').length}</td></tr>
+            <tr><td>اجتماعات خارجية</td><td>${meetings.filter(m=>m.type==='external').length}</td></tr>
+            <tr><td>زيارات ميدانية</td><td>${meetings.filter(m=>m.type==='visit').length}</td></tr>
+            <tr><td>التكليفات</td><td>${meetings.reduce((s,m)=>s+(m.tasks?.length||0),0)}</td></tr>
+        </table>
+
+        <h2>📅 قائمة الاجتماعات</h2>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>العنوان</th>
+                <th>النوع</th>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>المكان</th>
+                <th>الحضور</th>
+            </tr>
+    `;
+
+    meetings.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach((m, i) => {
+        const typeClass = 'type-' + m.type;
+        const typeLabel = m.type === 'internal' ? 'داخلي' : m.type === 'external' ? 'خارجي' : 'زيارة';
+        html += `
+            <tr>
+                <td>${i+1}</td>
+                <td>${m.title}</td>
+                <td class="${typeClass}">${typeLabel}</td>
+                <td>${formatDateAr(m.date)}</td>
+                <td>${m.time}</td>
+                <td>${m.location}</td>
+                <td>${m.attendees}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+        </table>
+
+        <h2>📋 التكليفات</h2>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>التكليف</th>
+                <th>المسؤول</th>
+                <th>الإدارة</th>
+                <th>الموعد</th>
+                <th>الحالة</th>
+            </tr>
+    `;
+
+    let taskNum = 1;
+    meetings.forEach(m => {
+        (m.tasks || []).forEach(t => {
+            const status = getTaskStatus(t.deadline);
+            const statusLabel = status === 'overdue' ? 'متأخرة' : status === 'warning' ? 'خلال 3 أيام' : status === 'upcoming' ? 'قادمة' : 'في الميعاد';
+            html += `
+                <tr>
+                    <td>${taskNum++}</td>
+                    <td>${t.text}</td>
+                    <td>${t.person}</td>
+                    <td>${t.dept}</td>
+                    <td>${t.deadline}</td>
+                    <td>${statusLabel}</td>
+                </tr>
+            `;
+        });
+    });
+
+    html += `
+        </table>
+        <div class="footer">
+            تم إنشاء هذا التقرير بواسطة نظام متابعة اجتماعات HIO<br>
+            © الهيئة العامة للرعاية الصحية
+        </div>
+    </body>
+    </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+}
+
+function exportToExcel() {
+    let csv = '\uFEFF'; // BOM for Arabic
+    csv += 'العنوان,النوع,التاريخ,الوقت,المكان,الحضور,الملاحظات\n';
+
+    meetings.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(m => {
+        const typeLabel = m.type === 'internal' ? 'داخلي' : m.type === 'external' ? 'خارجي' : 'زيارة';
+        csv += `"${m.title}","${typeLabel}","${m.date}","${m.time}","${m.location}","${m.attendees}","${(m.notes || '').replace(/"/g,'""')}"\n`;
+    });
+
+    csv += '\n\nالتكليفات\ن';
+    csv += 'الاجتماع,التكليف,المسؤول,الإدارة,الموعد\ن';
+
+    meetings.forEach(m => {
+        (m.tasks || []).forEach(t => {
+            csv += `"${m.title}","${t.text}","${t.person}","${t.dept}","${t.deadline}"\ن`;
+        });
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'HIO_Meetings_' + formatDate(new Date()) + '.csv';
+    link.click();
+}
+
+function backupData() {
+    const data = {
+        meetings: meetings,
+        exportDate: new Date().toISOString(),
+        version: 'v4'
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'HIO_Backup_' + formatDate(new Date()) + '.json';
+    link.click();
+    alert('✅ تم حفظ النسخة الاحتياطية بنجاح!');
+}
+
+function restoreData(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.meetings && Array.isArray(data.meetings)) {
+                if (confirm(`⚠️ هل تريد استرجاع ${data.meetings.length} اجتماع؟ سيتم استبدال البيانات الحالية.`)) {
+                    meetings = data.meetings;
+                    saveData();
+                    renderAll();
+                    alert('✅ تم استرجاع البيانات بنجاح!');
+                }
+            } else {
+                alert('❌ ملف غير صالح');
+            }
+        } catch(err) {
+            alert('❌ خطأ في قراءة الملف');
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
+}
+
+// ===== PRINT =====
+function printSchedule(type) {
+    const today = new Date();
+    let filtered = [];
+    let title = '';
+
+    if (type === 'daily') {
+        const todayStr = formatDate(today);
+        filtered = meetings.filter(m => m.date === todayStr);
+        title = `جدول يوم: ${formatDateAr(todayStr)}`;
+    } else if (type === 'weekly') {
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        filtered = meetings.filter(m => {
+            const d = new Date(m.date);
+            return d >= weekStart && d <= weekEnd;
+        });
+        title = `جدول أسبوع: ${formatDateAr(formatDate(weekStart))} - ${formatDateAr(formatDate(weekEnd))}`;
+    } else {
+        filtered = meetings.filter(m => {
+            const d = new Date(m.date);
+            return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+        });
+        const monthNames = ['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+        title = `جدول شهر: ${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+    }
+
+    // Create print view
+    const printWindow = window.open('', '_blank');
+
+    let html = `
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <title>${title}</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+            body { font-family: 'Cairo', sans-serif; padding: 40px; color: #2c3e50; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #1a5f9e; padding-bottom: 20px; }
+            .header img { width: 80px; height: 80px; }
+            .header h1 { color: #1a5f9e; margin: 10px 0; font-size: 22px; }
+            .header p { color: #7f8c8d; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th { background: #1a5f9e; color: white; padding: 12px; text-align: right; font-size: 13px; }
+            td { padding: 10px; border-bottom: 1px solid #ddd; font-size: 12px; }
+            tr:nth-child(even) { background: #f9f9f9; }
+            .type-internal { color: #1a5f9e; font-weight: 700; }
+            .type-external { color: #e67e22; font-weight: 700; }
+            .type-visit { color: #9b59b6; font-weight: 700; }
+            .footer { margin-top: 40px; text-align: center; color: #7f8c8d; font-size: 11px; border-top: 1px solid #ddd; padding-top: 20px; }
+            .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+            .badge-internal { background: rgba(26,95,158,0.1); color: #1a5f9e; }
+            .badge-external { background: rgba(230,126,34,0.1); color: #e67e22; }
+            .badge-visit { background: rgba(155,89,182,0.1); color: #9b59b6; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/c/c2/General_Authority_for_Health_Care_Logo.png/220px-General_Authority_for_Health_Care_Logo.png" onerror="this.style.display='none'">
+            <h1>نظام متابعة الاجتماعات</h1>
+            <p>الهيئة العامة للرعاية الصحية</p>
+            <p style="font-weight:700;color:#1a5f9e;">${title}</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>#</th>
+                <th>العنوان</th>
+                <th>النوع</th>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>المكان</th>
+                <th>الحضور</th>
+                <th>الملاحظات</th>
+            </tr>
+    `;
+
+    if (filtered.length === 0) {
+        html += `<tr><td colspan="8" style="text-align:center;padding:30px;">لا توجد اجتماعات في هذه الفترة</td></tr>`;
+    } else {
+        filtered.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach((m, i) => {
+            const typeLabel = m.type === 'internal' ? 'داخلي' : m.type === 'external' ? 'خارجي' : 'زيارة';
+            const badgeClass = 'badge-' + m.type;
+            html += `
+                <tr>
+                    <td>${i+1}</td>
+                    <td style="font-weight:600;">${m.title}</td>
+                    <td><span class="badge ${badgeClass}">${typeLabel}</span></td>
+                    <td>${formatDateAr(m.date)}</td>
+                    <td>${m.time}</td>
+                    <td>${m.location}</td>
+                    <td>${m.attendees}</td>
+                    <td>${m.notes || '-'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    html += `
+        </table>
+        <div class="footer">
+            تم إنشاء هذا التقرير بواسطة نظام متابعة اجتماعات HIO | 
+            تاريخ الطباعة: ${formatDateAr(formatDate(today))} ${today.getHours()}:${String(today.getMinutes()).padStart(2,'0')}
+        </div>
+    </body>
+    </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+}
+
+// ===== INIT =====
+init();
+</script>
 </body>
 </html>
